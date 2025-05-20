@@ -2,6 +2,8 @@
 
 ![系统架构图](https://i.imgur.com/IK9b7nE.png)
 
+**GitHub仓库：** [https://github.com/Decent898/live2d-project-for-HCI](https://github.com/Decent898/live2d-project-for-HCI)
+
 ## 项目简介
 
 AI智能陪伴系统是一个结合了先进AI技术和Live2D动画技术的交互式平台。系统以可爱的动画形象"三月七"(March Seven)为界面，提供智能对话、情感陪伴和信息查询等功能，旨在为用户创造一个友好、有趣的AI互动体验。

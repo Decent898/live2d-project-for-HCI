@@ -2,6 +2,12 @@
 
 ![三月七 Live2D 模型](https://i.imgur.com/XTtpPVX.png)
 
+**GitHub仓库：** [https://github.com/Decent898/live2d-project-for-HCI](https://github.com/Decent898/live2d-project-for-HCI)
+
+这是一个基于Django开发的AI智能虚拟陪伴系统，集成了Live2D动画角色作为用户界面的一部分，提供智能对话和互动体验。目前系统使用"三月七"(March Seven)作为默认Live2D角色模型。智能虚拟陪伴系统
+
+![三月七 Live2D 模型](https://i.imgur.com/XTtpPVX.png)
+
 这是一个基于Django开发的AI智能虚拟陪伴系统，集成了Live2D动画角色作为用户界面的一部分，提供智能对话和互动体验。目前系统使用"三月七"作为默认Live2D角色模型。
 
 ## 项目背景
@@ -62,8 +68,8 @@ companion_system/
 
 1. 克隆仓库
 ```
-git clone https://github.com/yourusername/ai-companion-system.git
-cd ai-companion-system
+git clone https://github.com/Decent898/live2d-project-for-HCI.git
+cd live2d-project-for-HCI
 ```
 
 2. 安装依赖
