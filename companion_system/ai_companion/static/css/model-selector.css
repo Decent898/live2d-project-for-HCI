@@ -1,0 +1,17 @@
+.model-selector {
+    display: none; /* 隐藏模型选择器 */
+}
+
+.model-button {
+    display: none; /* 隐藏模型按钮 */
+}
+
+.model-button:hover {
+    background-color: #e3e3e3;
+}
+
+.model-button.active {
+    background-color: #4CAF50;
+    color: white;
+    border-color: #4CAF50;
+}

@@ -1,0 +1,28 @@
+{
+    "version": "1.0.0",
+    "model": "https://unpkg.com/live2d-widget-model-shizuku@1.0.5/assets/shizuku.model.json",
+    "textures": [
+        "https://unpkg.com/live2d-widget-model-shizuku@1.0.5/assets/shizuku.1024/texture_00.png",
+        "https://unpkg.com/live2d-widget-model-shizuku@1.0.5/assets/shizuku.1024/texture_01.png",
+        "https://unpkg.com/live2d-widget-model-shizuku@1.0.5/assets/shizuku.1024/texture_02.png",
+        "https://unpkg.com/live2d-widget-model-shizuku@1.0.5/assets/shizuku.1024/texture_03.png",
+        "https://unpkg.com/live2d-widget-model-shizuku@1.0.5/assets/shizuku.1024/texture_04.png",
+        "https://unpkg.com/live2d-widget-model-shizuku@1.0.5/assets/shizuku.1024/texture_05.png"
+    ],
+    "physics": "https://unpkg.com/live2d-widget-model-shizuku@1.0.5/assets/shizuku.physics.json",
+    "pose": "https://unpkg.com/live2d-widget-model-shizuku@1.0.5/assets/shizuku.pose.json",
+    "expressions": [
+        {
+            "name": "f01",
+            "file": "https://unpkg.com/live2d-widget-model-shizuku@1.0.5/assets/shizuku.exp.json"
+        },
+        {
+            "name": "f02",
+            "file": "https://unpkg.com/live2d-widget-model-shizuku@1.0.5/assets/shizuku.exp2.json"
+        },
+        {
+            "name": "f03",
+            "file": "https://unpkg.com/live2d-widget-model-shizuku@1.0.5/assets/shizuku.exp3.json"
+        }
+    ]
+}

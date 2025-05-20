@@ -1,0 +1,27 @@
+{
+	"Version": 3,
+	"FileReferences": {
+		"Moc": "march_seven.moc3",
+		"Textures": [
+			"三月七.4096/texture_00.png",
+			"三月七.4096/texture_01.png"
+		],
+		"Physics": "march_seven.physics3.json",
+		"DisplayInfo": "march_seven.cdi3.json"
+	},
+	"Groups": [
+		{
+			"Target": "Parameter",
+			"Name": "EyeBlink",
+			"Ids": [
+				"ParamEyeLOpen",
+				"ParamEyeROpen"
+			]
+		},
+		{
+			"Target": "Parameter",
+			"Name": "LipSync",
+			"Ids": []
+		}
+	]
+}

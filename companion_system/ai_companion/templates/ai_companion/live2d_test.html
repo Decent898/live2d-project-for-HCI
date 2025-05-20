@@ -1,0 +1,717 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live2D表情控制测试 - AI智能陪伴系统</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/live2d-custom.css' %}">
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        .live2d-test-area {
+            width: 320px;
+            height: 450px;
+            position: relative;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-right: 20px;
+        }
+        
+        .control-panel {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .control-section {
+            margin-bottom: 30px;
+        }
+        
+        h1, h2, h3 {
+            color: #4CAF50;
+        }
+        
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .emotion-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .emotion-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .happy-btn {
+            background-color: #FFEB3B;
+            color: #333;
+        }
+        
+        .sad-btn {
+            background-color: #90CAF9;
+            color: #333;
+        }
+        
+        .angry-btn {
+            background-color: #FF8A80;
+            color: white;
+        }
+        
+        .surprise-btn {
+            background-color: #CE93D8;
+            color: white;
+        }
+        
+        .confused-btn {
+            background-color: #A5D6A7;
+            color: #333;
+        }
+        
+        .cute-btn {
+            background-color: #FFAB91;
+            color: #333;
+        }
+        
+        .thinking-btn {
+            background-color: #81D4FA;
+            color: #333;
+        }
+        
+        .normal-btn {
+            background-color: #E0E0E0;
+            color: #333;
+        }
+        
+        .action-btn {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .action-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .dialog-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .dialog-btn {
+            padding: 10px 20px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .dialog-btn:hover {
+            background-color: #1e88e5;
+        }
+        
+        .model-selector-area {
+            margin-bottom: 20px;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        
+        .status-bar {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-family: monospace;
+        }
+        
+        .model-switch-btn {
+            padding: 8px 15px;
+            background-color: #E0E0E0;
+            color: #333;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .model-switch-btn.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .model-switch-btn:hover {
+            background-color: #BDBDBD;
+        }
+        
+        .model-switch-btn.active:hover {
+            background-color: #45a049;
+        }
+        
+        .live2d-container {
+            position: relative;
+            width: 300px;
+            height: 400px;
+        }
+        
+        #march-seven-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+        }
+        
+        .waifu-tips {
+            position: absolute;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            font-size: 14px;
+            line-height: 1.5;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s, transform 0.3s;
+            max-width: 250px;
+        }
+        
+        .waifu-tips-active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="live2d-test-area">
+            <div class="model-selector-area" id="model-selector">
+                <!-- 模型选择按钮会在这里动态添加 -->
+            </div>
+            <div class="model-selector-area">
+                <button id="standard-model-btn" class="model-switch-btn active">标准模型</button>
+                <button id="march-seven-btn" class="model-switch-btn">March Seven</button>
+            </div>
+            <div class="live2d-container">
+                <canvas id="live2d" width="300" height="400"></canvas>
+                <canvas id="march-seven-canvas" width="300" height="400" style="position: absolute; top: 0; left: 0; display: none;"></canvas>
+            </div>
+        </div>
+        
+        <div class="control-panel">
+            <h1>Live2D表情控制测试</h1>
+            <p>使用以下控制面板测试Live2D角色的表情、动作和对话。</p>
+            
+            <div class="control-section">
+                <h2>表情控制</h2>
+                <p>点击按钮触发不同的表情：</p>
+                <div class="btn-group">
+                    <button class="emotion-btn happy-btn" data-emotion="happy">开心</button>
+                    <button class="emotion-btn sad-btn" data-emotion="sad">悲伤</button>
+                    <button class="emotion-btn angry-btn" data-emotion="angry">生气</button>
+                    <button class="emotion-btn surprise-btn" data-emotion="surprise">惊讶</button>
+                    <button class="emotion-btn confused-btn" data-emotion="confused">困惑</button>
+                    <button class="emotion-btn cute-btn" data-emotion="cute">可爱</button>
+                    <button class="emotion-btn thinking-btn" data-emotion="thinking">思考</button>
+                    <button class="emotion-btn normal-btn" data-emotion="normal">正常</button>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h2>动作控制</h2>
+                <p>点击按钮触发特定动作：</p>
+                <div>
+                    <button class="action-btn" data-action="tap_body">点击身体</button>
+                    <button class="action-btn" data-action="flick_head">轻拍头部</button>
+                    <button class="action-btn" data-action="shake">摇晃</button>
+                    <button class="action-btn" data-action="wave">挥手</button>
+                    <button class="action-btn" data-action="nod">点头</button>
+                    <button class="action-btn" data-action="tilt_head">歪头</button>
+                    <button class="action-btn" data-action="tap_face">触摸脸部</button>
+                    <button class="action-btn" data-action="tap_chin">触摸下巴</button>
+                </div>
+                <div style="margin-top: 10px;">
+                    <button class="action-btn" data-action="showRandAction" data-category="happy">随机开心动作</button>
+                    <button class="action-btn" data-action="showRandAction" data-category="sad">随机悲伤动作</button>
+                    <button class="action-btn" data-action="showRandAction" data-category="angry">随机生气动作</button>
+                    <button class="action-btn" data-action="showRandAction" data-category="thinking">随机思考动作</button>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h2>对话控制</h2>
+                <p>输入文字显示在对话气泡中：</p>
+                <input type="text" class="dialog-input" id="dialog-input" placeholder="输入想要显示的对话...">
+                <button class="dialog-btn" id="dialog-btn">显示对话</button>
+                <button class="dialog-btn" id="random-talk-btn" style="margin-left: 10px;">随机对话</button>
+            </div>
+            
+            <div class="status-bar" id="status-bar">
+                最近操作: -
+            </div>
+            
+            <a href="/guide/live2d/" class="back-link">返回Live2D指南</a>
+            <a href="/" class="back-link" style="margin-left: 10px;">返回主页</a>
+        </div>
+    </div>
+
+    <!-- Live2D 库 -->
+    <script src="https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/autoload.js"></script>
+    <!-- 直接引入核心JS文件以确保L2Dwidget可用 -->
+    <script src="https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/live2d.min.js"></script>
+    <script src="{% static 'live2d/lib/live2d.min.js' %}"></script>
+    <script>
+        // 确保库加载完成
+        window.addEventListener('load', function() {
+            // 检查L2Dwidget是否可用
+            if (typeof L2Dwidget === 'undefined') {
+                console.error('L2Dwidget库未加载成功，尝试手动加载');
+                // 手动加载核心库
+                const script = document.createElement('script');
+                script.src = "https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/live2d.min.js";
+                document.head.appendChild(script);
+                
+                // 等待库加载
+                script.onload = function() {
+                    console.log('手动加载L2Dwidget成功');
+                    if (typeof L2Dwidget === 'undefined') {
+                        window.L2Dwidget = {};
+                        console.log('创建L2Dwidget对象');
+                    }
+                };
+            }
+        });
+    </script>
+    
+    <!-- Cubism SDK 库 -->
+    <script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pixi.js@5.3.3/dist/pixi.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@pixi/utils@5.3.3/dist/utils.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@pixi/math@5.3.3/dist/math.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.3.1/dist/index.min.js"></script>
+    <script>
+        // 全局错误处理
+        window.addEventListener('error', function(event) {
+            console.error('全局错误:', event.message, event.filename, event.lineno);
+            if (event.filename && event.filename.includes('live2d') || 
+                event.filename && event.filename.includes('cubism') ||
+                event.message && event.message.includes('live2d') ||
+                event.message && event.message.includes('cubism')) {
+                const statusBar = document.getElementById('status-bar');
+                if (statusBar) {
+                    statusBar.style.backgroundColor = '#ffebee';
+                    statusBar.style.color = '#d32f2f';
+                    statusBar.textContent = '加载错误: ' + event.message;
+                }
+            }
+        });
+        
+        // 确保全局对象可访问
+        window.Live2DCubismCore = window.Live2DCubismCore || {};
+        window.LIVE2DCUBISMPIXI = window.LIVE2DCUBISMPIXI || {};
+        window.Live2DModel = window.Live2DModel || {};
+        
+        // 确保L2Dwidget对象存在
+        window.L2Dwidget = window.L2Dwidget || {
+            init: function() { console.log("L2Dwidget.init被调用，但库未加载"); },
+            captureFrame: function() { console.log("L2Dwidget.captureFrame被调用，但库未加载"); },
+            showTips: function(text) {
+                // 创建一个临时事件
+                const e = new Event('showTips');
+                // 添加文本
+                e.text = text;
+                // 分发事件
+                document.dispatchEvent(e);
+            },
+            showRandAction: function(category) { 
+                console.log("L2Dwidget.showRandAction被调用，但库未加载"); 
+            }
+        };
+    </script>
+    
+    <!-- 自定义脚本 -->
+    <script src="{% static 'js/live2d-init.js' %}"></script>
+    <script src="{% static 'js/model-selector.js' %}"></script>
+    <script src="{% static 'js/march-seven-model.js' %}"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("页面已加载，Live2D初始化开始...");
+            // 初始化Live2D
+            if (typeof initLive2D === 'function') {
+                console.log("正在调用initLive2D函数...");
+                initLive2D();
+                console.log("initLive2D函数调用完成");
+            } else {
+                console.error("initLive2D函数未定义，检查live2d-init.js是否正确加载");
+            }
+            
+            // 确保L2Dwidget对象存在
+            if (typeof L2Dwidget === 'undefined') {
+                console.warn("L2Dwidget未定义，正在初始化备用对象");
+                window.L2Dwidget = window.L2Dwidget || {
+                    init: function() { console.log("L2Dwidget.init被调用，但库未加载"); },
+                    captureFrame: function() { console.log("L2Dwidget.captureFrame被调用，但库未加载"); },
+                    showTips: function(text) {
+                        // 创建一个临时事件
+                        const e = new Event('showTips');
+                        // 添加文本
+                        e.text = text;
+                        // 分发事件
+                        document.dispatchEvent(e);
+                    },
+                    showRandAction: function(category) { 
+                        console.log("L2Dwidget.showRandAction被调用，类别:", category); 
+                    }
+                };
+            }
+            
+            // 初始化模型选择器
+            if (typeof initModelSelector === 'function') {
+                setTimeout(initModelSelector, 1000); // 稍微延迟以确保Live2D加载完成
+            }
+            
+            // 添加调试按钮
+            const controlPanel = document.querySelector('.control-panel');
+            if (controlPanel) {
+                const debugSection = document.createElement('div');
+                debugSection.className = 'control-section';
+                debugSection.innerHTML = `
+                    <h2>调试工具</h2>
+                    <p>用于排查模型加载问题：</p>
+                    <button id="debug-btn" class="dialog-btn">打印调试信息</button>
+                    <button id="reload-libs-btn" class="dialog-btn" style="margin-left: 10px;">重载库</button>
+                    <button id="force-load-btn" class="dialog-btn" style="margin-left: 10px; background-color: #ff9800;">强制加载March Seven</button>
+                `;
+                controlPanel.appendChild(debugSection);
+                
+                // 添加调试按钮事件
+                document.getElementById('debug-btn').addEventListener('click', function() {
+                    console.log("=== 手动调试触发 ===");
+                    if (typeof debugModelState === 'function') {
+                        debugModelState();
+                    } else {
+                        console.log("调试函数未定义");
+                    }
+                    
+                    // 检查依赖库
+                    console.log("全局对象检查:");
+                    console.log("PIXI:", typeof PIXI !== 'undefined');
+                    console.log("Live2DCubismCore:", typeof Live2DCubismCore !== 'undefined');
+                    console.log("Live2DModel:", typeof Live2DModel !== 'undefined');
+                    
+                    updateStatus('调试信息已打印到控制台');
+                });
+                
+                // 重载库按钮事件
+                document.getElementById('reload-libs-btn').addEventListener('click', function() {
+                    // 动态加载库
+                    const loadScript = (src) => {
+                        return new Promise((resolve, reject) => {
+                            const script = document.createElement('script');
+                            script.src = src;
+                            script.onload = () => resolve(true);
+                            script.onerror = () => reject(new Error(`加载失败: ${src}`));
+                            document.head.appendChild(script);
+                        });
+                    };
+                    
+                    Promise.all([
+                        loadScript("https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"),
+                        loadScript("https://cdn.jsdelivr.net/npm/pixi.js@5.3.3/dist/pixi.min.js")
+                    ]).then(() => {
+                        return loadScript("https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.3.1/dist/index.min.js");
+                    }).then(() => {
+                        updateStatus('依赖库重载完成，请重试');
+                        console.log("依赖库重载完成");
+                    }).catch(error => {
+                        updateStatus('依赖库重载失败: ' + error.message);
+                        console.error("依赖库重载失败:", error);
+                    });
+                });
+                
+                // 强制加载按钮事件
+                document.getElementById('force-load-btn').addEventListener('click', function() {
+                    // 切换到三月七，使用不同的加载方式
+                    document.getElementById('march-seven-btn').classList.add('active');
+                    document.getElementById('standard-model-btn').classList.remove('active');
+                    currentModelType = 'march-seven';
+                    
+                    // 显示模型canvas
+                    const marchSevenCanvas = document.getElementById('march-seven-canvas');
+                    if (marchSevenCanvas) {
+                        marchSevenCanvas.style.display = 'block';
+                    }
+                    const standardCanvas = document.getElementById('live2d');
+                    if (standardCanvas) {
+                        standardCanvas.style.display = 'none';
+                    }
+                    
+                    updateStatus('尝试使用备选方法加载March Seven模型...');
+                    
+                    // 尝试创建新的canvas
+                    if (!document.getElementById('alt-canvas')) {
+                        const canvas = document.createElement('canvas');
+                        canvas.id = 'alt-canvas';
+                        canvas.width = 300;
+                        canvas.height = 400;
+                        canvas.style.position = 'absolute';
+                        canvas.style.top = '0';
+                        canvas.style.left = '0';
+                        
+                        const container = document.querySelector('.live2d-container');
+                        if (container) {
+                            container.appendChild(canvas);
+                        }
+                        
+                        // 尝试直接加载
+                        const modelPath = '/static/live2d/march_seven/march_seven.model3.json';
+                        // 动态引入更多依赖
+                        const scriptUrls = [
+                            "https://cdn.jsdelivr.net/npm/pixi-live2d-display/dist/index.min.js",
+                            "https://cdn.jsdelivr.net/npm/@pixi/constants@5.3.3/dist/constants.min.js",
+                            "https://cdn.jsdelivr.net/npm/@pixi/core@5.3.3/dist/core.min.js",
+                            "https://cdn.jsdelivr.net/npm/@pixi/display@5.3.3/dist/display.min.js"
+                        ];
+                        
+                        Promise.all(scriptUrls.map(url => {
+                            return new Promise((resolve, reject) => {
+                                const script = document.createElement('script');
+                                script.src = url;
+                                script.onload = resolve;
+                                script.onerror = reject;
+                                document.head.appendChild(script);
+                            });
+                        })).then(() => {
+                            if (typeof PIXI !== 'undefined' && PIXI.Application) {
+                                const app = new PIXI.Application({
+                                    view: canvas,
+                                    autoStart: true,
+                                    transparent: true
+                                });
+                                
+                                if (PIXI.live2d && PIXI.live2d.Live2DModel && PIXI.live2d.Live2DModel.from) {
+                                    return PIXI.live2d.Live2DModel.from(modelPath)
+                                        .then(model => {
+                                            cubism3Model = model;
+                                            model.scale.set(0.15); // 缩小模型尺寸
+                                            model.position.set(150, 250); // 调整垂直位置，让模型居中
+                                            app.stage.addChild(model);
+                                            updateStatus('March Seven模型加载成功');
+                                        });
+                                } else {
+                                    updateStatus('PIXI.live2d.Live2DModel不可用');
+                                }
+                            } else {
+                                updateStatus('PIXI.Application不可用');
+                            }
+                        }).catch(error => {
+                            updateStatus('加载失败: ' + error.message);
+                        });
+                    }
+                });
+            }
+            
+            // 添加L2Dwidget的自定义方法
+            if (!window.L2Dwidget) window.L2Dwidget = {};
+            window.L2Dwidget.showTips = function(text) {
+                // 创建一个临时事件
+                const e = new Event('showTips');
+                // 添加文本
+                e.text = text;
+                // 分发事件
+                document.dispatchEvent(e);
+            };
+            
+            // 监听showTips事件
+            document.addEventListener('showTips', function(e) {
+                // 查找提示元素
+                let tipsElement = document.getElementById('waifu-tips');
+                
+                // 如果不存在，创建一个
+                if (!tipsElement) {
+                    tipsElement = document.createElement('div');
+                    tipsElement.id = 'waifu-tips';
+                    tipsElement.className = 'waifu-tips';
+                    document.body.appendChild(tipsElement);
+                }
+                
+                // 设置文本
+                tipsElement.innerHTML = e.text;
+                // 添加活动类
+                tipsElement.classList.add('waifu-tips-active');
+                
+                // 调整对话框位置，根据内容长度调整位置
+                const textLength = e.text.length;
+                const live2dArea = document.querySelector('.live2d-test-area');
+                if (live2dArea) {
+                    const rect = live2dArea.getBoundingClientRect();
+                    // 确保对话框在Live2D角色附近
+                    tipsElement.style.left = (rect.left + 150 - 125) + 'px'; // 居中对齐
+                    tipsElement.style.top = (rect.top + 150) + 'px'; // 从live2d-test-area顶部偏移150px
+                }
+                
+                // 设置超时以隐藏提示
+                setTimeout(function() {
+                    tipsElement.classList.remove('waifu-tips-active');
+                }, 5000); // 5秒后隐藏
+                
+                // 更新状态栏
+                updateStatus('显示对话: ' + e.text.substring(0, 30) + (e.text.length > 30 ? '...' : ''));
+            });
+            
+            // 当前选中的模型类型
+            let currentModelType = 'standard';
+            
+            // 添加模型切换按钮事件
+            document.getElementById('standard-model-btn').addEventListener('click', function() {
+                this.classList.add('active');
+                document.getElementById('march-seven-btn').classList.remove('active');
+                currentModelType = 'standard';
+                toggleModelDisplay('standard');
+                updateStatus('切换到标准模型');
+            });
+            
+            document.getElementById('march-seven-btn').addEventListener('click', function() {
+                this.classList.add('active');
+                document.getElementById('standard-model-btn').classList.remove('active');
+                currentModelType = 'march-seven';
+                toggleModelDisplay('march-seven');
+                updateStatus('切换到March Seven模型');
+            });
+            
+            // 表情按钮事件
+            document.querySelectorAll('.emotion-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const emotion = this.getAttribute('data-emotion');
+                    
+                    if (currentModelType === 'standard') {
+                        triggerLive2DExpression(emotion);
+                        updateStatus('触发标准模型表情: ' + emotion);
+                    } else if (currentModelType === 'march-seven') {
+                        playMarchSevenExpression(emotion);
+                        updateStatus('触发March Seven表情: ' + emotion);
+                    }
+                });
+            });
+            
+            // 动作按钮事件
+            document.querySelectorAll('.action-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const action = this.getAttribute('data-action');
+                    
+                    if (currentModelType === 'standard') {
+                        if (action === 'showRandAction') {
+                            const category = this.getAttribute('data-category');
+                            L2Dwidget.showRandAction(category);
+                            updateStatus('触发标准模型随机动作类别: ' + category);
+                        } else {
+                            // 触发特定动作
+                            document.dispatchEvent(new Event(action));
+                            updateStatus('触发标准模型动作: ' + action);
+                        }
+                    } else if (currentModelType === 'march-seven') {
+                        if (action === 'showRandAction') {
+                            const category = this.getAttribute('data-category');
+                            playMarchSevenMotion(category);
+                            updateStatus('触发March Seven随机动作类别: ' + category);
+                        } else {
+                            // 映射动作到三月七动作
+                            playMarchSevenMotion(action);
+                            updateStatus('触发March Seven动作: ' + action);
+                        }
+                    }
+                });
+            });
+            
+            // 对话输入事件
+            document.getElementById('dialog-btn').addEventListener('click', function() {
+                const dialogText = document.getElementById('dialog-input').value;
+                if (dialogText.trim() !== '') {
+                    if (currentModelType === 'standard') {
+                        if (typeof showMessageInLive2D === 'function') {
+                            showMessageInLive2D(dialogText);
+                        } else if (typeof L2Dwidget.showTips === 'function') {
+                            L2Dwidget.showTips(dialogText);
+                        }
+                    } else if (currentModelType === 'march-seven') {
+                        showMessageInLive2DMarchSeven(dialogText);
+                    }
+                    updateStatus('显示用户输入对话: ' + dialogText.substring(0, 30) + (dialogText.length > 30 ? '...' : ''));
+                }
+            });
+            
+            // 随机对话按钮事件
+            document.getElementById('random-talk-btn').addEventListener('click', function() {
+                if (currentModelType === 'standard') {
+                    if (typeof L2Dwidget.showRandomTalk === 'function') {
+                        L2Dwidget.showRandomTalk();
+                        updateStatus('触发标准模型随机对话');
+                    }
+                } else if (currentModelType === 'march-seven') {
+                    const randomTalks = [
+                        "我是March Seven，很高兴见到你！",
+                        "人生是长久的等待，我在星穹铁道迎接着你的到来。",
+                        "要保持冷静，无论遇到什么状况都别慌。",
+                        "我会一直陪着你，走到旅途的终点。",
+                        "今天也要继续我们的冒险吗？"
+                    ];
+                    const randomTalk = randomTalks[Math.floor(Math.random() * randomTalks.length)];
+                    showMessageInLive2DMarchSeven(randomTalk);
+                    updateStatus('触发March Seven随机对话');
+                }
+            });
+            
+            // 更新状态栏
+            function updateStatus(text) {
+                const statusBar = document.getElementById('status-bar');
+                statusBar.textContent = '最近操作: ' + text;
+            }
+            
+            // 初始化状态
+            updateStatus('页面加载完成');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+/* 语音合成相关样式 */
+.speech-controls {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+    gap: 10px;
+    flex-direction: column;
+    align-items: center;
+}
+
+.speech-btn-row {
+    display: flex;
+    gap: 10px;
+}
+
+.speech-type-indicator {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+    background-color: #f5f5f5;
+    padding: 2px 8px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.speech-type-server {
+    background-color: #e1f5fe;
+    color: #0277bd;
+}
+
+.speech-type-client {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.speech-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.speech-btn:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.speech-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+}
+
+.speech-btn i {
+    font-size: 20px;
+}
+
+.speech-btn.toggle-speech.active {
+    background-color: #f44336;
+}
+
+.speech-btn.toggle-speech.active:hover {
+    background-color: #d32f2f;
+}
+
+/* 添加Font Awesome图标支持 */
+.fa {
+    display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.fa-volume-up:before {
+    content: "🔊";
+}
+
+.fa-volume-off:before {
+    content: "🔇";
+}
+
+.fa-stop:before {
+    content: "⏹️";
+}
+
+/* 通知样式 */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #333;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    animation: slidein 0.5s ease-out;
+    transition: opacity 0.5s;
+}
+
+.notification.fadeout {
+    opacity: 0;
+}
+
+@keyframes slidein {
+    from {
+        transform: translateY(100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "version": "1.0.0",
+    "model": "https://unpkg.com/live2d-widget-model-koharu@1.0.5/assets/koharu.model.json",
+    "textures": [
+        "https://unpkg.com/live2d-widget-model-koharu@1.0.5/assets/koharu.2048/texture_00.png"
+    ],
+    "physics": "https://unpkg.com/live2d-widget-model-koharu@1.0.5/assets/koharu.physics.json",
+    "expressions": [
+        {
+            "name": "f01",
+            "file": "https://unpkg.com/live2d-widget-model-koharu@1.0.5/assets/koharu.exp.json"
+        },
+        {
+            "name": "f02",
+            "file": "https://unpkg.com/live2d-widget-model-koharu@1.0.5/assets/koharu.exp2.json"
+        },
+        {
+            "name": "f03",
+            "file": "https://unpkg.com/live2d-widget-model-koharu@1.0.5/assets/koharu.exp3.json"
+        }
+    ]
+}

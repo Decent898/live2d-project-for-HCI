@@ -1,0 +1,146 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI智能陪伴系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/model-selector.css' %}">
+    <link rel="stylesheet" href="{% static 'css/live2d-custom.css' %}">
+</head>
+<body>
+    <div class="container">
+        <div class="chat-container">
+            <div class="chat-header">
+                <h2>AI智能陪伴系统</h2>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <!-- 消息会动态添加在这里 -->
+            </div>
+            <div class="chat-input">
+                <input type="text" id="user-input" placeholder="请输入您的消息...">
+                <label for="file-upload" class="upload-btn" title="上传图片">
+                    <i class="fas fa-image"></i>
+                </label>
+                <input type="file" id="file-upload" accept="image/*" style="display:none">
+                <button id="send-button">发送</button>
+            </div>
+        </div>
+        
+        <div class="companion-container">
+            <div class="live2d-container">
+                <canvas id="live2d" width="300" height="550"></canvas>
+            </div>
+            <div class="companion-info">
+                <h3 id="companion-name">三月七</h3>
+                <p id="companion-description">我是您的智能AI助手，有什么可以帮您的吗？</p>
+                <a href="/guide/live2d/" class="model-guide-link">Live2D模型指南</a>
+                <a href="/test/live2d/" class="model-guide-link" style="margin-left: 5px; background-color: #2196F3;">表情测试工具</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live2D 库 -->
+    <script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pixi.js@5.3.3/dist/pixi.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@pixi/utils@5.3.3/dist/utils.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@pixi/math@5.3.3/dist/math.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.3.1/dist/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/live2d.min.js"></script>
+    <script src="{% static 'live2d/lib/live2d.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/autoload.js"></script>
+    <script src="{% static 'js/live2d-init-new.js' %}"></script>
+    <script src="{% static 'js/march-seven-model.js' %}"></script>
+    <script src="{% static 'js/chat.js' %}"></script>
+    
+    <script>
+        // 全局错误处理
+        window.addEventListener('error', function(event) {
+            console.error('全局错误:', event.message, event.filename, event.lineno);
+            if (event.filename && (event.filename.includes('live2d') || event.filename.includes('cubism')) || 
+                event.message && (event.message.includes('live2d') || event.message.includes('cubism'))) {
+                console.error('Live2D 相关错误:', event);
+            }
+        });
+        
+        // 确保全局对象可访问
+        window.Live2DCubismCore = window.Live2DCubismCore || {};
+        
+        // 添加L2Dwidget的自定义方法
+        if (!window.L2Dwidget) window.L2Dwidget = {};
+        window.L2Dwidget.showTips = function(text) {
+            // 创建一个临时事件
+            const e = new Event('showTips');
+            // 添加文本
+            e.text = text;
+            // 分发事件
+            document.dispatchEvent(e);
+        };
+        
+        // 监听showTips事件
+        document.addEventListener('showTips', function(e) {
+            // 查找提示元素
+            let tipsElement = document.getElementById('waifu-tips');
+            
+            // 如果不存在，创建一个
+            if (!tipsElement) {
+                tipsElement = document.createElement('div');
+                tipsElement.id = 'waifu-tips';
+                tipsElement.className = 'waifu-tips';
+                document.body.appendChild(tipsElement);
+            }
+            
+            // 设置文本
+            tipsElement.innerHTML = e.text;
+            // 添加活动类
+            tipsElement.classList.add('waifu-tips-active');
+            
+            // 调整对话框位置，根据内容长度调整位置
+            const textLength = e.text.length;
+            const companion = document.querySelector('.companion-container');
+            if (companion) {
+                const rect = companion.getBoundingClientRect();
+                // 确保对话框在Live2D角色附近
+                tipsElement.style.right = '10px'; // 右侧对齐
+                tipsElement.style.top = (rect.top + 100) + 'px'; // 从companion-container顶部偏移100px
+            }
+            
+            // 设置超时以隐藏提示
+            setTimeout(function() {
+                tipsElement.classList.remove('waifu-tips-active');
+            }, 5000); // 5秒后隐藏
+        });
+        
+        // 初始化全局情感状态
+        window.lastTriggeredEmotion = 'normal';
+        
+        // 添加AI回复和Live2D连接增强的事件监听器
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建一个模拟对话定时器，随时间触发随机对话
+            setInterval(function() {
+                // 如果没有最近的用户交互，随机触发对话
+                const lastInteractionTime = window.lastInteractionTime || 0;
+                const currentTime = Date.now();
+                
+                // 如果超过30秒没有交互，有10%的几率触发随机对话
+                if (currentTime - lastInteractionTime > 30000 && Math.random() < 0.1) {
+                    if (typeof L2Dwidget.showRandomTalk === 'function') {
+                        L2Dwidget.showRandomTalk();
+                    }
+                }
+            }, 10000); // 每10秒检查一次
+            
+            // 记录用户交互时间
+            document.addEventListener('click', function() {
+                window.lastInteractionTime = Date.now();
+            });
+            
+            document.addEventListener('keydown', function() {
+                window.lastInteractionTime = Date.now();
+            });
+        });
+    </script>
+</body>
+</html>

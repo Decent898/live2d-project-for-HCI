@@ -1,0 +1,107 @@
+/* Live2D对话框位置修正 */
+#waifu {
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 999;
+    height: 100%;
+    width: 320px;
+    pointer-events: none;
+}
+
+#waifu-tips {
+    position: absolute;
+    right: 20px; /* 调整对话框右侧位置 */
+    top: 100px; /* 调整对话框顶部位置 */
+    transform: translateX(0);
+    width: 250px;
+    text-align: center;
+    color: #333;
+    font-size: 14px;
+    border: 1px solid #eee;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    padding: 12px;
+    pointer-events: auto;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    line-height: 1.5;
+    max-height: 150px;
+    overflow-y: auto;
+    /* 添加对话框尾巴 */
+    position: relative;
+}
+
+#waifu-tips:after {
+    content: '';
+    position: absolute;
+    right: -10px;
+    top: 20px;
+    border-width: 10px 0 10px 10px;
+    border-style: solid;
+    border-color: transparent transparent transparent rgba(255, 255, 255, 0.9);
+}
+
+#live2d {
+    position: absolute;
+    right: 10px;
+    top: 0;
+    width: 300px;
+    height: 550px;
+}
+
+/* 覆盖原始库的位置样式 */
+.waifu-tips-active {
+    opacity: 1 !important;
+    animation: tipsFadeIn 0.3s ease forwards;
+}
+
+@keyframes tipsFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 情感特定样式 */
+.emotion-happy #waifu-tips {
+    background-color: rgba(255, 251, 224, 0.95);
+    border-color: #ffeb3b;
+}
+
+.emotion-sad #waifu-tips {
+    background-color: rgba(232, 245, 255, 0.95);
+    border-color: #90caf9;
+}
+
+.emotion-angry #waifu-tips {
+    background-color: rgba(255, 235, 235, 0.95);
+    border-color: #ff8a80;
+}
+
+.emotion-surprise #waifu-tips {
+    background-color: rgba(243, 229, 255, 0.95);
+    border-color: #ce93d8;
+}
+
+.emotion-confused #waifu-tips {
+    background-color: rgba(232, 245, 233, 0.95);
+    border-color: #a5d6a7;
+}
+
+.emotion-thinking #waifu-tips {
+    background-color: rgba(225, 242, 255, 0.95);
+    border-color: #81d4fa;
+}
+
+/* 消息动画 */
+@keyframes message-highlight {
+    0% { box-shadow: 0 0 2px rgba(0, 0, 0, 0.1); }
+    50% { box-shadow: 0 0 10px rgba(33, 150, 243, 0.4); }
+    100% { box-shadow: 0 0 2px rgba(0, 0, 0, 0.1); }
+}
