@@ -30,7 +30,8 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-2yph!yd=9#5p%&09tyq1&-6ic-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+# 允许所有主机访问，用于开发环境。生产环境中应该设置具体的主机名
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition

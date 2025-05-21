@@ -112,7 +112,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // 重置文件上传状态
         currentFile = null;
         fileUpload.value = '';
-        userInput.placeholder = '请输入您的消息...';        // 发送到后端API
+        userInput.placeholder = '请输入您的消息...';
+          // 发送到后端API
         fetch('/api/chat/', fetchOptions)
         .then(response => response.json())
         .then(data => {
@@ -126,41 +127,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 localStorage.setItem('conversation_id', data.conversation_id);
             }
             
-            // 尝试解析回复中的JSON格式 {emotion: "xxx", content: "xxx"}
-            let content = data.message;
-            let emotion = 'normal'; // 默认情感
-            
-            try {
-                // 检查消息是否包含JSON格式的情感数据
-                const jsonMatch = content.match(/\{\{emotion\s*:\s*(\w+)\s*,\s*content\s*:\s*([^}]+)\}\}/);
-                if (jsonMatch) {
-                    emotion = jsonMatch[1].trim();
-                    content = jsonMatch[2].trim();
-                    console.log(`从JSON格式提取到情感: ${emotion}, 内容: ${content}`);
-                } else {
-                    // 如果不是JSON格式，使用传统的情感分析
-                    console.log("未检测到JSON格式的情感标记，使用传统分析");
-                    emotion = analyzeEmotion(content);
-                }
-            } catch (e) {
-                console.error("解析情感数据时发生错误:", e);
-                emotion = analyzeEmotion(content);
-            }
-            
-            // 显示AI回复内容
-            addMessage(content, false);
+            // 显示AI回复
+            addMessage(data.message, false);
             
             // 在Live2D对话框中显示回复
             if (typeof showMessageInLive2D === 'function') {
-                showMessageInLive2D(content);
+                showMessageInLive2D(data.message);
             }
-            
-            // 直接使用提取的情感触发表情
-            triggerLive2DExpression(emotion);
+              // 根据回复内容分析情感，触发Live2D表情
+            const emotion = analyzeAndTriggerExpression(data.message);
             
             // 自动播放AI回复的语音
+            // 优先使用服务器语音，如果服务器语音不可用，则使用客户端语音
             console.log('开始播放AI回复语音');
-            playAIResponseAudio(content, emotion);
+            playAIResponseAudio(data.message, emotion);
             console.log('AI回复语音播放完成');
         })
         .catch(error => {

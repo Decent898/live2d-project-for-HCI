@@ -38,6 +38,7 @@ env/
 *.swo
 .DS_Store
 .history
+/speech
 
 # Project specific
 /uploads/

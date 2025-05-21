@@ -220,7 +220,7 @@ async function loadMarchSevenModel() {
 
             // 调整模型位置和缩放
             model.scale.set(finalScale); // 使用计算的最佳缩放比例
-            model.position.set(canvas.width / 4, canvas.height / 2); // 精确居中
+            model.position.set(canvas.width / 2, canvas.height / 2); // 精确居中
             model.anchor.set(0.5, 0.5); // 锚点设在中心
 
             // 添加到舞台
@@ -293,6 +293,7 @@ function playMarchSevenExpression(expressionName) {
         }
         else if (expressionName === 'happy') {
             // 随机选择比耶或者捂脸
+            resetFaceParameters();
             const randomValue = Math.random();
             if (randomValue < 0.5) {
                 setFaceParameter('Param26', 1); // 捂脸
@@ -305,21 +306,25 @@ function playMarchSevenExpression(expressionName) {
             return true;
         }
         else if (expressionName === 'sad') {
+            resetFaceParameters();
             setFaceParameter('Param32', 1); // 哭
             console.log("表情已应用: sad");
             return true;
         }
         else if (expressionName === 'embarrassed') {
+            resetFaceParameters();
             setFaceParameter('Param30', 1); // 脸红
             console.log("表情已应用: embarrassed");
             return true;
         }
         else if (expressionName === 'angry') {
+            resetFaceParameters();
             setFaceParameter('Param31', 1); // 黑脸
             console.log("表情已应用: angry");
             return true;
         }
         else if (expressionName === 'surprise') {
+            resetFaceParameters();
             setFaceParameter('Param26', 1); // 捂脸
             console.log("表情已应用: surprise");
             return true;
@@ -470,7 +475,7 @@ function showMessageInLive2DMarchSeven(message) {
     if (live2dArea) {
         const rect = live2dArea.getBoundingClientRect();
         // 确保对话框在Live2D角色附近
-        tipsElement.style.left = (rect.left + 150 - 125) + 'px'; // 居中对齐
+        tipsElement.style.right = (rect.right + 150 - 125) + 'px'; // 居中对齐
         tipsElement.style.top = (rect.top + 150) + 'px'; // 从live2d-test-area顶部偏移150px
     }
 
