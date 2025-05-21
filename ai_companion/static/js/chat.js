@@ -112,9 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 重置文件上传状态
         currentFile = null;
         fileUpload.value = '';
-        userInput.placeholder = '请输入您的消息...';
-        
-        // 发送到后端API
+        userInput.placeholder = '请输入您的消息...';        // 发送到后端API
         fetch('/api/chat/', fetchOptions)
         .then(response => response.json())
         .then(data => {
@@ -128,16 +126,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 localStorage.setItem('conversation_id', data.conversation_id);
             }
             
-            // 显示AI回复
-            addMessage(data.message, false);
+            // 尝试解析回复中的JSON格式 {emotion: "xxx", content: "xxx"}
+            let content = data.message;
+            let emotion = 'normal'; // 默认情感
+            
+            try {
+                // 检查消息是否包含JSON格式的情感数据
+                const jsonMatch = content.match(/\{\{emotion\s*:\s*(\w+)\s*,\s*content\s*:\s*([^}]+)\}\}/);
+                if (jsonMatch) {
+                    emotion = jsonMatch[1].trim();
+                    content = jsonMatch[2].trim();
+                    console.log(`从JSON格式提取到情感: ${emotion}, 内容: ${content}`);
+                } else {
+                    // 如果不是JSON格式，使用传统的情感分析
+                    console.log("未检测到JSON格式的情感标记，使用传统分析");
+                    emotion = analyzeEmotion(content);
+                }
+            } catch (e) {
+                console.error("解析情感数据时发生错误:", e);
+                emotion = analyzeEmotion(content);
+            }
+            
+            // 显示AI回复内容
+            addMessage(content, false);
             
             // 在Live2D对话框中显示回复
             if (typeof showMessageInLive2D === 'function') {
-                showMessageInLive2D(data.message);
+                showMessageInLive2D(content);
             }
             
-            // 根据回复内容分析情感，触发Live2D表情
-            analyzeAndTriggerExpression(data.message);
+            // 直接使用提取的情感触发表情
+            triggerLive2DExpression(emotion);
+            
+            // 自动播放AI回复的语音
+            console.log('开始播放AI回复语音');
+            playAIResponseAudio(content, emotion);
+            console.log('AI回复语音播放完成');
         })
         .catch(error => {
             console.error('Error:', error);
@@ -185,8 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         return messageDiv;
     }
-    
-    // 分析消息内容并触发Live2D表情
+      // 分析消息内容并触发Live2D表情
     function analyzeAndTriggerExpression(message) {
         // 简单情感分析
         const lowerMsg = message.toLowerCase();
@@ -273,8 +296,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         console.log(`情感分析结果: ${emotion}, 评分: ${emotions[emotion]}`);
-        
-        // 触发对应表情
+          // 触发对应表情
         triggerLive2DExpression(emotion);
         
         // 随机播放动作
@@ -282,6 +304,61 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 L2Dwidget.showRandomTalk();
             }, 1000);
+        }
+        
+        // 返回检测到的情感，可用于语音合成
+        return emotion;
+    }
+      // 自动播放AI回复的语音
+    function playAIResponseAudio(message, emotion) {
+        // 将情感映射到TTS API的情感参数
+        let ttsEmotion = 'Happy'; // 默认情感
+        
+        // 情感映射
+        const emotionMap = {
+            'happy': 'Happy',
+            'sad': 'Sad',
+            'angry': 'Angry',
+            'surprise': 'Surprised',
+            'confused': 'Confused', 
+            'cute': 'Happy',
+            'thinking': 'Happy',
+            'normal': 'Happy'
+        };
+        
+        if (emotion in emotionMap) {
+            ttsEmotion = emotionMap[emotion];
+        }
+        
+        console.log(`开始播放AI回复语音, 检测到情感: ${emotion}, TTS情感参数: ${ttsEmotion}`);
+        
+        // 检查是否存在服务器语音功能
+        if (typeof window.serverSpeechEnabled !== 'undefined') {
+            console.log(`服务器语音状态: ${window.serverSpeechEnabled ? '启用' : '禁用'}`);
+        } else {
+            console.log('找不到服务器语音状态变量，可能未正确初始化');
+        }
+        
+        // 首先尝试服务器端语音合成
+        if (typeof playServerSpeech === 'function') {
+            console.log('使用服务器端语音合成播放AI回复');
+            
+            // 准备要传递的对象，包含情感信息
+            const speechData = {
+                text: message,
+                emotion: ttsEmotion
+            };
+            
+            // 调用服务器语音功能
+            playServerSpeech(message);
+        } else {
+            // 如果服务器语音函数不存在，则使用客户端语音合成
+            console.log('服务器语音函数不存在，使用客户端语音合成播放AI回复');
+            if (typeof speakText === 'function') {
+                speakText(message);
+            } else {
+                console.error('找不到任何可用的语音合成功能');
+            }
         }
     }
     

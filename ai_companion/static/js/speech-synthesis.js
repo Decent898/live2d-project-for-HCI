@@ -4,11 +4,18 @@ let speechUtterance;
 let isSpeaking = false;
 let speechQueue = [];
 
+// 在DOM加载完成后初始化客户端语音功能
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('初始化客户端语音功能...');
+    initSpeechSynthesis();
+});
+
 // 初始化语音合成
 function initSpeechSynthesis() {
     // 检查浏览器是否支持语音合成
     if ('speechSynthesis' in window) {
         speechSynthesis = window.speechSynthesis;
+        console.log('客户端语音合成功能已初始化');
         return true;
     } else {
         console.error('当前浏览器不支持语音合成');
@@ -71,18 +78,19 @@ async function speakText(text, queueIfSpeaking = true) {
     if (!speechSynthesis) {
         if (!initSpeechSynthesis()) return;
     }
-    
-    try {
+      try {
         // 停止当前的语音
         stopSpeech();
         
         // 创建新的语音实例
         speechUtterance = new SpeechSynthesisUtterance(text);
+        console.log(`创建客户端语音合成对象，文本: ${text.substring(0, 50)}...`);
         
         // 选择中文语音
         const voice = await selectChineseVoice();
         speechUtterance.voice = voice;
         speechUtterance.lang = 'zh-CN';
+        console.log(`设置客户端语音: ${voice ? voice.name : '默认'}, 语言: zh-CN`);
         
         // 设置语速和音调
         speechUtterance.rate = 1.0;  // 语速 (0.1 到 10)

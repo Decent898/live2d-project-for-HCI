@@ -386,8 +386,11 @@ document.addEventListener("DOMContentLoaded", function() {
             </div>
         </div>
         
-        <a href="/" class="back-link">返回主页</a>
-        <a href="/test/live2d/" class="back-link" style="margin-left: 10px; background-color: #2196F3;">Live2D测试工具</a>
+        <a href="/" class="back-link">返回主页</a>        <a href="/test/live2d/" class="back-link" style="margin-left: 10px; background-color: #2196F3;">Live2D测试工具</a>
     </div>
+    
+    <!-- Live2D函数引用 -->
+    <script src="{% static 'js/live2d-expression.js' %}"></script>
+    <script src="{% static 'js/march-seven-model.js' %}"></script>
 </body>
 </html>

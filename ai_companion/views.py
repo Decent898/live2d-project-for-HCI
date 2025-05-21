@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, FileResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 import json
@@ -7,6 +7,7 @@ import os
 import uuid
 import traceback
 from .services import ai_service
+from .services.speech_service import speech_service
 from .models import Conversation, Message, Companion
 from django.contrib.auth.models import User
 
@@ -22,6 +23,63 @@ def live2d_guide(request):
 def live2d_test(request):
     """Live2D测试页面"""
     return render(request, 'ai_companion/live2d_test.html')
+
+@csrf_exempt
+def speech_api(request):
+    """语音合成API"""
+    if request.method == 'POST':
+        try:
+            print("收到语音合成请求")
+            data = json.loads(request.body)
+            text = data.get('text', '')
+            speaker = data.get('speaker', '派蒙_ZH')
+            emotion = data.get('emotion', 'Happy')
+            language = data.get('language', 'ZH')
+            
+            print(f"语音合成参数: text={text[:30]}..., speaker={speaker}, emotion={emotion}, language={language}")
+            
+            if not text:
+                print("错误: 没有提供文本内容")
+                return JsonResponse({'error': '请提供文本内容'}, status=400)
+            
+            # 调用语音服务生成音频
+            print("调用语音服务生成音频...")
+            audio_file_path = speech_service.text_to_speech(
+                text=text, 
+                speaker=speaker,
+                language=language,
+                emotion=emotion
+            )
+            
+            if not audio_file_path or not os.path.exists(audio_file_path):
+                print(f"错误: 语音合成失败, 文件路径: {audio_file_path}")
+                return JsonResponse({'error': '语音合成失败'}, status=500)
+            
+            print(f"语音合成成功, 文件路径: {audio_file_path}, 大小: {os.path.getsize(audio_file_path)} 字节")
+            
+            # 返回音频文件
+            response = FileResponse(open(audio_file_path, 'rb'), content_type='audio/wav')
+            print("生成FileResponse响应成功")
+            
+            # 请求完成后删除临时文件
+            def cleanup_file(file_path):
+                try:
+                    os.remove(file_path)
+                    print(f"临时语音文件已删除: {file_path}")
+                except Exception as e:
+                    print(f"删除临时语音文件失败: {e}")
+                    pass
+            
+            # 设置关闭连接时的回调函数
+            response.close = lambda: cleanup_file(audio_file_path)
+            
+            return response
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': '只接受POST请求'}, status=405)
 
 @csrf_exempt
 def chat_api(request):
