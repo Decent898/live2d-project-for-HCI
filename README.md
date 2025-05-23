@@ -1,123 +1,112 @@
-# AI 智能虚拟陪伴系统
+# AI 智能陪伴系统
 
-![三月七 Live2D 模型](https://i.imgur.com/XTtpPVX.png)
 
-**GitHub仓库：** [https://github.com/Decent898/live2d-project-for-HCI](https://github.com/Decent898/live2d-project-for-HCI)
-
-这是一个基于Django开发的AI智能虚拟陪伴系统，集成了Live2D动画角色作为用户界面的一部分，提供智能对话和互动体验。目前系统使用"三月七"(March Seven)作为默认Live2D角色模型。智能虚拟陪伴系统
-
-![三月七 Live2D 模型](https://i.imgur.com/XTtpPVX.png)
-
-这是一个基于Django开发的AI智能虚拟陪伴系统，集成了Live2D动画角色作为用户界面的一部分，提供智能对话和互动体验。目前系统使用"三月七"作为默认Live2D角色模型。
-
-## 项目背景
-
-本项目是人机交互课程设计的成果，主题为**虚拟陪伴智能体设计与实现**。
-
-虚拟陪伴智能体是一类面向人类长期互动需求、具备基本社会认知和情感表达能力的人工智能系统。借助近年来人工智能技术的飞跃，尤其是在大语言模型、多模态感知、AIGC等方面的技术进展，虚拟陪伴智能体可以展现出更多样的能力和形式，可以具备人格特征、情绪响应、自适应交互能力的拟人化数字智能体的存在。
-
-本项目提出了一个创意性设计方案，探讨如何基于当前前沿技术，构建一个具备基本"同理心"和"适应性"的虚拟陪伴体，提升用户的交互满意度与主观亲密感。该系统可服务于普通用户，也可以针对特定群体（如独居老人、压力较大的学生、儿童等）定制。
-
-系统的对话功能通过北京理工大学智能体网站自研的API接口实现，该API基于LLM，提供了对话生成和理解能力。完整API文档可在项目目录中的`v1.5.0-chat_api_doc-v4.pdf`中查阅。
-
-## Live2D模型版权声明
-
-本项目使用的三月七(March Seven)模型来源于B站UP主的作品：https://www.bilibili.com/video/BV1Pu41187JT/
-
-**版权声明**：本项目中使用的三月七Live2D模型仅用于学术研究和人机交互课程设计项目展示，不用于任何商业用途。原始模型的版权归属于米哈游及其授权方所有。如需将本项目用于其他用途，请确保遵守相关版权规定，并替换为您拥有使用权的Live2D模型。
+这是一个基于Django开发的AI智能陪伴系统，集成了Live2D动画角色作为用户界面的一部分，提供智能对话和互动体验。系统使用"三月七"(March Seven)作为默认Live2D角色模型，支持表情变化和动作交互。
 
 ## 功能特点
 
-- **实时对话**: 通过北京理工大学智能体API提供自然、流畅的对话体验
-- **情感适应**: 系统能够识别用户情绪，并给予适当回应
-- **Live2D动画角色**: 集成三月七Live2D模型，提供视觉互动体验
-- **表情与动作**: 角色可以根据对话内容显示不同的表情和动作
-- **文件上传**: 支持图片上传进行分析和交流
-- **响应式设计**: 适配不同设备屏幕尺寸
+- **智能对话**: 通过集成先进AI模型提供自然、流畅的多轮对话体验
+- **Live2D动态角色**: 集成三月七Live2D模型，支持丰富的表情和动作系统
+- **情感表达**: 角色可根据对话内容和情境，展示开心、伤心、惊讶等多种表情
+- **触摸互动**: 支持点击模型不同部位触发特定动作和反应
+- **文件处理**: 支持图片上传进行分析和交流
+- **语音交互**: 集成语音识别和合成功能，支持语音对话（实验性功能）
+- **响应式设计**: 适配不同设备屏幕尺寸，提供流畅的用户体验
 
 ## 技术栈
 
-- **后端**: Django, Django REST Framework
-- **前端**: HTML, CSS, JavaScript
-- **动画**: Live2D Cubism SDK
-- **AI对话**: 基于北京理工大学智能体网站API的大语言模型
-- **情感分析**: 自然语言处理和情感识别算法
-
-## 项目结构
-
-```
-companion_system/
-├── ai_companion/              # 主应用目录
-│   ├── migrations/            # 数据库迁移文件
-│   ├── services/              # 业务逻辑服务
-│   │   ├── ai_service.py      # AI服务接口
-│   │   └── knowledge_base.py  # 知识库服务
-│   ├── static/                # 静态资源
-│   │   ├── css/               # 样式文件
-│   │   ├── js/                # JavaScript文件
-│   │   └── live2d/           # Live2D模型资源
-│   ├── templates/             # HTML模板
-│   ├── models.py              # 数据模型
-│   ├── views.py               # 视图函数
-│   └── urls.py                # URL路由
-├── companion_project/         # 项目配置
-└── docs/                      # 项目文档
-```
+- **后端**: Django 5.2.x + Django REST Framework
+- **前端**: HTML5, CSS3, JavaScript
+- **动画**: Live2D Cubism SDK 4.x
+- **AI对话**: OpenAI API (可配置其他API)
+- **数据存储**: SQLite (开发环境) / 可扩展至PostgreSQL
+- **语音处理**: 集成第三方语音识别和合成服务
 
 ## 安装指南
 
 1. 克隆仓库
-```
-git clone https://github.com/Decent898/live2d-project-for-HCI.git
-cd live2d-project-for-HCI
-```
 
-2. 安装依赖
-```
-pip install -r requirements.txt
-```
+    ```bash
+    git clone https://github.com/yourusername/ai-companion-system.git
+    cd ai-companion-system
+    ```
 
-3. 创建.env文件并设置必要的环境变量
-```
-SECRET_KEY=your_secret_key
-DEBUG=True
-BIT_API_KEY=your_bit_api_key
-```
+2. 配置环境变量
+   
+    创建`.env`文件并设置必要的环境变量:    ```
+    # OpenAI API密钥
+    OPENAI_API_KEY=your_openai_api_key
+    
+    # Django密钥
+    SECRET_KEY=django-insecure-key-replace-this-in-production
+    
+    # 调试模式
+    DEBUG=True
+    ```
+
+3. 安装依赖
+
+    ```bash
+    pip install -r requirements.txt
+    ```
 
 4. 运行数据库迁移
-```
-python manage.py migrate
-```
+
+    ```bash
+    python manage.py migrate
+    ```
 
 5. 运行开发服务器
+
+    ```bash
+    python manage.py runserver
+    ```
+
+6. 公网访问（可选）
+   
+    如需通过公网访问，请运行:
+
+    ```bash
+    python manage.py runserver 0.0.0.0:8000
+    ```
+    
+    然后在浏览器中访问 `http://your_ip_address:8000/`
+
+    注意：公网访问时请确保适当配置安全选项和防火墙规则
+
+## 项目结构
+
 ```
-python manage.py runserver
+ai_companion/              # 主应用目录
+├── static/                # 静态资源文件
+│   ├── css/               # CSS样式文件
+│   ├── js/                # JavaScript脚本
+│   └── live2d/           # Live2D模型资源
+├── templates/             # HTML模板
+├── services/              # 服务层代码
+├── views.py               # 视图函数
+└── urls.py                # URL路由配置
+companion_project/         # 项目配置目录
+docs/                      # 项目文档
 ```
-
-6. 访问系统
-在浏览器中访问 http://127.0.0.1:8000/
-
-## 人机交互实验
-
-本项目作为人机交互课程设计的一部分，包含以下实验内容：
-
-1. **用户需求预实验**: 通过问卷和访谈收集用户对虚拟陪伴系统的需求和期望
-2. **系统有效性实验**: 测试系统的对话能力、情感识别准确性和互动流畅度
-3. **用户体验评估**: 测量用户满意度、亲密感和长期使用意愿
-
-实验数据和分析结果详见`docs/PROJECT_DOCUMENTATION.md`文件。
-
-## 课程设计成果
-
-作为人机交互课程设计的成果，本项目包含：
-
-1. **实验报告**: 包括动机、技术综述、设计思路、实验设计、数据分析和结论
-2. **实验视频**: 记录系统运行和用户测试过程
-3. **核心代码**: 本仓库包含系统的核心实现代码
 
 ## Live2D模型使用说明
 
-本项目使用的三月七(March Seven)模型仅用于学术研究和个人学习目的。如需将本项目用于其他用途，请确保遵守相关版权规定，并替换为您拥有使用权的Live2D模型。
+本项目使用的三月七(March Seven)模型仅用于学术研究和个人学习目的。该模型具有以下功能：
+
+- **表情系统**: 支持多种表情切换，包括开心、伤心、惊讶、困惑等
+- **动作响应**: 内置点头、摇头、眨眼等基本动作
+- **互动触发**: 支持通过点击不同区域触发反应
+
+如需将本项目用于其他用途，请确保遵守相关版权规定，并替换为您拥有使用权的Live2D模型。
+
+## 自定义配置
+
+系统提供了多种自定义选项：
+
+- **AI模型**: 可在`.env`文件中配置不同的AI服务提供商和API密钥
+- **角色设定**: 可在对话系统中自定义角色人设和行为模式
+- **UI定制**: 可通过修改CSS和HTML模板定制界面外观
 
 ## 贡献指南
 
@@ -126,7 +115,20 @@ python manage.py runserver
 1. 新功能或修复有对应的测试
 2. 所有测试都已通过
 3. 代码风格符合项目规范
+4. 更新相关文档
+
+## 待实现功能
+
+- [ ] 完整的用户账号系统
+- [ ] 多语言支持
+- [ ] 更多Live2D模型集成
+- [ ] 跨平台客户端支持
+- [ ] 离线模式支持
 
 ## 许可证
 
 本项目采用 MIT 许可证。详情请见 [LICENSE](LICENSE) 文件。
+
+## 联系方式
+
+如有问题或建议，请通过GitHub Issues或Pull Requests与我们联系。

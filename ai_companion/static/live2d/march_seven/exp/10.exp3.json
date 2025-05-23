@@ -1,0 +1,25 @@
+{
+	"Type": "Live2D Expression",
+	"Parameters": [
+		{
+			"Id": "Param10",
+			"Value": 0.05283398553729057,
+			"Blend": "Overwrite"
+		},
+        {
+            "Id": "Param21",
+            "Value": 1,
+            "Blend": "Overwrite"
+        },
+        {
+            "Id": "Param23",
+            "Value": 0.9605583548545837,
+            "Blend": "Overwrite"
+        },
+        {
+            "Id": "Param24",
+            "Value": 0.039441660046577454,
+            "Blend": "Overwrite"
+        }
+	]
+}

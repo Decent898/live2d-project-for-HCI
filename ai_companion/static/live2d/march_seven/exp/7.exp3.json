@@ -4,7 +4,7 @@
 		{
 			"Id": "Param32",
 			"Value": 1,
-			"Blend": "Add"
+			"Blend": "Overwrite"
 		}
 	]
 }

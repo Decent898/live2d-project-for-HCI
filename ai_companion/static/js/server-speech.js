@@ -1,14 +1,38 @@
+// 导入Gradio客户端
+// 注意：需要先安装依赖 npm i -D @gradio/client
+// import { Client } from "@gradio/client"; 
+// 上面的import语句需要在构建环境中使用，浏览器环境请引入CDN
+
 // 服务器端语音合成功能
 let audioPlayer;
 let isServerSpeaking = false;
 let serverSpeechQueue = [];
 let serverSpeechEnabled = true;
 let serverSpeechErrorCount = 0; // 记录连续错误次数
+let gradioClient = null; // Gradio 客户端实例
+
+// 在DOM加载完成后初始化语音功能
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('初始化服务器语音功能...');
+    initServerSpeech();
+});
 
 // 初始化音频播放器
 function initServerSpeech() {
     // 创建音频元素
     audioPlayer = new Audio();
+    console.log('服务器语音播放器已初始化');
+    
+    // 初始化Gradio客户端
+    try {
+        // 如果在浏览器环境中可以直接访问Client
+        if (typeof window.GradioClient !== 'undefined' && window.GradioClient.Client) {
+            console.log('检测到全局Gradio客户端，初始化中...');
+            initGradioClient();
+        }
+    } catch (error) {
+        console.warn('Gradio客户端初始化失败，将使用服务器API方式:', error);
+    }
     
     // 设置事件监听器
     audioPlayer.onplay = () => {
@@ -52,31 +76,46 @@ function playNextServerSpeech() {
 
 // 播放服务器生成的语音
 function playServerSpeech(text, queueIfSpeaking = true) {
+    console.log('尝试播放服务器语音:', text.substring(0, 50) + '...');
+    
     // 如果未启用服务器语音，则直接返回
-    if (!serverSpeechEnabled) return;
+    if (!serverSpeechEnabled) {
+        console.log('服务器语音已禁用，不播放');
+        return;
+    }
     
     // 如果正在播放且需要排队，则加入队列
     if (isServerSpeaking && queueIfSpeaking) {
+        console.log('服务器语音正在播放，将文本加入队列');
         serverSpeechQueue.push(text);
         return;
     }
     
     // 确保音频播放器已初始化
     if (!audioPlayer) {
-        if (!initServerSpeech()) return;
+        console.log('音频播放器未初始化，尝试初始化');
+        if (!initServerSpeech()) {
+            console.error('音频播放器初始化失败');
+            return;
+        }
     }
     
     try {
         // 停止当前的播放
         stopServerSpeech();
         
+        
         // 构建请求数据
         const requestData = {
-            text: text
+            text: text,
+            speaker: '三月七_ZH',
+            emotion: 'Happy',
+            language: 'ZH'
         };
         
         // 在请求中添加一个时间戳，避免浏览器缓存
         const timestamp = new Date().getTime();
+        console.log('发送语音合成请求到服务器...');
         
         // 请求服务器语音合成
         fetch(`/api/speech/?t=${timestamp}`, {
@@ -98,17 +137,22 @@ function playServerSpeech(text, queueIfSpeaking = true) {
                     });
                 }
                 throw new Error(`服务器语音合成失败: ${response.status}`);
-            }
+            }            console.log('收到服务器语音响应，处理音频数据');
             return response.blob();
         })
         .then(blob => {
+            console.log(`收到音频blob数据，大小: ${blob.size} 字节, 类型: ${blob.type}`);
+            
             // 创建blob URL
             const audioUrl = URL.createObjectURL(blob);
+            console.log('创建音频URL:', audioUrl);
             
             // 设置音频源并播放
             audioPlayer.src = audioUrl;
+            console.log('开始播放服务器语音');
             audioPlayer.play().then(() => {
                 // 成功播放，重置错误计数
+                console.log('服务器语音开始播放成功');
                 serverSpeechErrorCount = 0;
             }).catch(error => {
                 console.error('播放服务器语音失败:', error);
