@@ -67,7 +67,7 @@ class SpeechService:
                     sdp_ratio=0.2,
                     noise_scale=0.6,
                     noise_scale_w=0.8,
-                    length_scale=1,
+                    length_scale=1.2,
                     language=language,
                     reference_audio=None,  # 可以省略或提供参考音频
                     emotion=emotion,

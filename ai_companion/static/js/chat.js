@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // 添加欢迎消息
-    addMessage('你好！我是你的AI助手，有什么我能帮到你的吗？', false);
+    addMessage('你好！我是你的AI助手，有什么我能帮到你的吗111？', false);
 
     // 发送消息
     function sendMessage() {
@@ -127,20 +127,58 @@ document.addEventListener('DOMContentLoaded', function() {
                 localStorage.setItem('conversation_id', data.conversation_id);
             }
             
+            // 解析LLM返回的JSON响应
+            let aiMessage = '';
+            let emotion = 'normal';
+            
+            try {
+                // 尝试解析message字段中的JSON
+                if (data.message) {
+                    // 如果message本身就是JSON对象
+                    if (typeof data.message === 'object') {
+                        aiMessage = data.message.content || data.message.message || '我收到了你的消息';
+                        emotion = data.message.emotion || 'normal';
+                    } 
+                    // 如果message是JSON字符串
+                    else if (typeof data.message === 'string') {
+                        try {
+                            const parsedMessage = JSON.parse(data.message);
+                            aiMessage = parsedMessage.content || parsedMessage.message || data.message;
+                            emotion = parsedMessage.emotion || 'normal';
+                        } catch (parseError) {
+                            // 如果解析失败，直接使用原始消息
+                            console.log('消息不是JSON格式，使用原始消息:', data.message);
+                            aiMessage = data.message;
+                            emotion = 'normal';
+                        }
+                    }
+                } else {
+                    aiMessage = '抱歉，我没有收到有效的回复';
+                    emotion = 'normal';
+                }
+            } catch (error) {
+                console.error('解析AI回复时出错:', error);
+                aiMessage = data.message || '抱歉，我遇到了一些问题';
+                emotion = 'normal';
+            }
+            
+            console.log('解析后的AI消息:', aiMessage);
+            console.log('解析后的情感:', emotion);
+            
             // 显示AI回复
-            addMessage(data.message, false);
+            addMessage(aiMessage, false);
             
             // 在Live2D对话框中显示回复
             if (typeof showMessageInLive2D === 'function') {
-                showMessageInLive2D(data.message);
+                showMessageInLive2D(aiMessage);
             }
-              // 根据回复内容分析情感，触发Live2D表情
-            const emotion = analyzeAndTriggerExpression(data.message);
+            
+            // 直接使用从LLM返回的情感，触发Live2D表情
+            triggerLive2DExpressionFromResponse(emotion);
             
             // 自动播放AI回复的语音
-            // 优先使用服务器语音，如果服务器语音不可用，则使用客户端语音
             console.log('开始播放AI回复语音');
-            playAIResponseAudio(data.message, emotion);
+            playAIResponseAudio(aiMessage, emotion);
             console.log('AI回复语音播放完成');
         })
         .catch(error => {
@@ -189,7 +227,27 @@ document.addEventListener('DOMContentLoaded', function() {
         
         return messageDiv;
     }
-      // 分析消息内容并触发Live2D表情
+
+    // 新增：直接使用LLM返回的情感触发Live2D表情
+    function triggerLive2DExpressionFromResponse(emotion) {
+        // 保存最新情感状态到全局变量，供其他地方使用
+        window.lastTriggeredEmotion = emotion;
+        
+        console.log(`从LLM响应中获取的情感: ${emotion}`);
+        
+        // 触发对应表情
+        // triggerLive2DExpression(emotion);
+        playMarchSevenExpression(emotion);
+        
+        // 随机播放动作
+        if (window.L2Dwidget && typeof L2Dwidget.showRandomTalk === 'function') {
+            setTimeout(() => {
+                L2Dwidget.showRandomTalk();
+            }, 1000);
+        }
+    }
+
+    // 保留原有的分析消息内容并触发Live2D表情的函数（作为备用方案）
     function analyzeAndTriggerExpression(message) {
         // 简单情感分析
         const lowerMsg = message.toLowerCase();
