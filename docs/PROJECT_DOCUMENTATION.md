@@ -2,6 +2,8 @@
 
 ![系统架构图](https://i.imgur.com/IK9b7nE.png)
 
+**GitHub仓库：** [https://github.com/Decent898/live2d-project-for-HCI](https://github.com/Decent898/live2d-project-for-HCI)
+
 ## 项目简介
 
 AI智能陪伴系统是一个结合了先进AI技术和Live2D动画技术的交互式平台。系统以可爱的动画形象"三月七"(March Seven)为界面，提供智能对话、情感陪伴和信息查询等功能，旨在为用户创造一个友好、有趣的AI互动体验。
@@ -20,14 +22,14 @@ AI智能陪伴系统是一个结合了先进AI技术和Live2D动画技术的交�
 
 - **Web框架**: Django
 - **API设计**: Django REST Framework
-- **AI服务**: 集成第三方AI服务API
+- **AI服务**: 集成北京理工大学智能体网站API
 - **数据存储**: SQLite (开发) / PostgreSQL (生产)
 
 ## 核心功能
 
 ### 1. 智能对话
 
-系统能够理解用户的自然语言输入，并给出相应的回复。对话功能支持多轮上下文理解，使交流更加自然流畅。
+系统能够理解用户的自然语言输入，并给出相应的回复。对话功能通过北京理工大学智能体网站自研API实现，支持多轮上下文理解，使交流更加自然流畅。API详细文档位于项目根目录的`v1.5.0-chat_api_doc-v4.pdf`文件中。
 
 ### 2. Live2D动画交互
 
