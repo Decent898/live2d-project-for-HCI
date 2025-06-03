@@ -4,28 +4,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI智能陪伴系统</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <title>AI智能陪伴系统</title>    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link rel="stylesheet" href="{% static 'css/model-selector.css' %}">
+    <link rel="stylesheet" href="{% static 'css/premium-effects.css' %}">
+    <link rel="stylesheet" href="{% static 'css/advanced-ui.css' %}">
+    <link rel="stylesheet" href="{% static 'css/special-effects.css' %}">    <link rel="stylesheet" href="{% static 'css/model-selector.css' %}">
     <link rel="stylesheet" href="{% static 'css/live2d-custom.css' %}">
+    <link rel="stylesheet" href="{% static 'css/flyingflowers.css' %}">
 </head>
 <body>
-    <div class="container">
-        <div class="chat-container">
+    <div class="container">        <div class="chat-container">
             <div class="chat-header">
-                <h2>AI智能陪伴系统</h2>
+                <h2><i class="fas fa-robot"></i> AI智能陪伴系统</h2>
+                <div class="status-indicator"></div>
             </div>
             <div class="chat-messages" id="chat-messages">
                 <!-- 消息会动态添加在这里 -->
-            </div>
-            <div class="chat-input">
-                <input type="text" id="user-input" placeholder="请输入您的消息...">
-                <label for="file-upload" class="upload-btn" title="上传图片">
-                    <i class="fas fa-image"></i>
-                </label>
+            </div>            <div class="chat-input">
+                <input type="text" id="user-input" placeholder="✨ 请输入您的消息...">
                 <input type="file" id="file-upload" accept="image/*" style="display:none">
-                <button id="send-button">发送</button>
+                <!-- 添加语音输入按钮 -->
+                <button id="voice-input-button" class="voice-button" title="语音输入">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button id="send-button" class="premium-button">
+                    <i class="fas fa-paper-plane"></i> 发送
+                </button>
             </div>
         </div>
         
@@ -50,12 +54,14 @@
     <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.3.1/dist/index.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/live2d.min.js"></script>    <script src="{% static 'live2d/lib/live2d.min.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/autoload.js"></script>
-    <script src="{% static 'js/live2d-init-new.js' %}"></script>    <script src="{% static 'js/march-seven-model.js' %}"></script>
-    <!-- 添加Live2D表情触发器 -->
-    <script src="{% static 'js/live2d-expression.js' %}"></script>
+    <script src="{% static 'js/live2d-init-new.js' %}"></script>    <script src="{% static 'js/march-seven-model.js' %}"></script>    <!-- 添加Live2D表情触发器 -->
+    <script src="{% static 'js/live2d-expression.js' %}"></script>    <!-- 添加口型同步功能脚本 -->
+    <script src="{% static 'js/lip-sync.js' %}"></script>
     <!-- 添加语音合成功能脚本 -->
     <script src="{% static 'js/speech-synthesis.js' %}"></script>
     <script src="{% static 'js/server-speech.js' %}"></script>
+    <!-- 添加表情同步协调器 -->
+    <script src="{% static 'js/expression-sync-coordinator.js' %}"></script>
     <script src="{% static 'js/chat.js' %}"></script>
     
     <script>
@@ -81,8 +87,7 @@
             // 分发事件
             document.dispatchEvent(e);
         };
-        
-        // 监听showTips事件
+          // 监听showTips事件
         document.addEventListener('showTips', function(e) {
             // 查找提示元素
             let tipsElement = document.getElementById('waifu-tips');
@@ -92,7 +97,13 @@
                 tipsElement = document.createElement('div');
                 tipsElement.id = 'waifu-tips';
                 tipsElement.className = 'waifu-tips';
-                document.body.appendChild(tipsElement);
+                // 将提示框添加到live2d-container内部，这样定位更准确
+                const live2dContainer = document.querySelector('.live2d-container');
+                if (live2dContainer) {
+                    live2dContainer.appendChild(tipsElement);
+                } else {
+                    document.body.appendChild(tipsElement);
+                }
             }
             
             // 设置文本
@@ -100,14 +111,23 @@
             // 添加活动类
             tipsElement.classList.add('waifu-tips-active');
             
-            // 调整对话框位置，根据内容长度调整位置
-            const textLength = e.text.length;
-            const companion = document.querySelector('.companion-container');
-            if (companion) {
-                const rect = companion.getBoundingClientRect();
-                // 确保对话框在Live2D角色附近
-                tipsElement.style.right = '10px'; // 右侧对齐
-                tipsElement.style.top = (rect.top + 100) + 'px'; // 从companion-container顶部偏移100px
+            // 调整对话框位置，相对于Live2D容器定位
+            const live2dContainer = document.querySelector('.live2d-container');
+            if (live2dContainer && tipsElement.parentElement === live2dContainer) {
+                // 如果提示框在live2d-container内，使用相对定位
+                tipsElement.style.position = 'absolute';
+                tipsElement.style.left = '-260px'; // 在Live2D角色左侧
+                tipsElement.style.top = '50px'; // 在角色头部位置
+                tipsElement.style.right = 'auto';
+            } else {
+                // 备用方案：绝对定位到Live2D容器附近
+                const rect = live2dContainer ? live2dContainer.getBoundingClientRect() : null;
+                if (rect) {
+                    tipsElement.style.position = 'fixed';
+                    tipsElement.style.left = (rect.left - 260) + 'px'; // 在Live2D角色左侧
+                    tipsElement.style.top = (rect.top + 50) + 'px'; // 在角色头部位置
+                    tipsElement.style.right = 'auto';
+                }
             }
             
             // 设置超时以隐藏提示
@@ -120,30 +140,68 @@
         window.lastTriggeredEmotion = 'normal';
         
         // 添加AI回复和Live2D连接增强的事件监听器
-        document.addEventListener('DOMContentLoaded', function() {
-            // 创建一个模拟对话定时器，随时间触发随机对话
-            setInterval(function() {
-                // 如果没有最近的用户交互，随机触发对话
-                const lastInteractionTime = window.lastInteractionTime || 0;
-                const currentTime = Date.now();
+        // document.addEventListener('DOMContentLoaded', function() {
+        //     // 创建一个模拟对话定时器，随时间触发随机对话
+        //     setInterval(function() {
+        //         // 如果没有最近的用户交互，随机触发对话
+        //         const lastInteractionTime = window.lastInteractionTime || 0;
+        //         const currentTime = Date.now();
                 
-                // 如果超过30秒没有交互，有10%的几率触发随机对话
-                if (currentTime - lastInteractionTime > 30000 && Math.random() < 0.1) {
-                    if (typeof L2Dwidget.showRandomTalk === 'function') {
-                        L2Dwidget.showRandomTalk();
-                    }
-                }
-            }, 10000); // 每10秒检查一次
+        //         // 如果超过30秒没有交互，有10%的几率触发随机对话
+        //         if (currentTime - lastInteractionTime > 30000 && Math.random() < 0.1) {
+        //             if (typeof L2Dwidget.showRandomTalk === 'function') {
+        //                 L2Dwidget.showRandomTalk();
+        //             }
+        //         }
+        //     }, 10000); // 每10秒检查一次
             
-            // 记录用户交互时间
-            document.addEventListener('click', function() {
-                window.lastInteractionTime = Date.now();
-            });
+        //     // 记录用户交互时间
+        //     document.addEventListener('click', function() {
+        //         window.lastInteractionTime = Date.now();
+        //     });
             
-            document.addEventListener('keydown', function() {
-                window.lastInteractionTime = Date.now();
-            });
-        });
+        //     document.addEventListener('keydown', function() {
+        //         window.lastInteractionTime = Date.now();
+        //     });
+        // });
+          // 测试提示框位置的函数（开发时使用）
+        window.testWaifuTips = function() {
+            console.log('测试waifu-tips位置...');
+            const testEvent = new Event('showTips');
+            testEvent.text = '💭 测试心理活动 - 这个提示框应该出现在Live2D角色的左侧！';
+            document.dispatchEvent(testEvent);
+        };        // 测试飞花令比分显示的函数
+        window.testScore = function(value = 5) {
+            if (typeof updateScoreDisplay === 'function') {
+                updateScoreDisplay(value);
+            } else {
+                console.log('updateScoreDisplay 函数尚未加载');
+            }
+        };
+        
+        // 测试语音识别功能
+        window.testSpeechRecognition = function() {
+            console.log('测试语音识别功能...');
+            if (document.getElementById('voice-input-button')) {
+                document.getElementById('voice-input-button').click();
+                console.log('已触发语音识别按钮');
+            } else {
+                console.log('语音识别按钮未找到');
+            }
+        };
+        
+        // 页面加载完成后的初始化
+        setTimeout(function() {
+            console.log('初始化系统...');
+            // 可以在这里添加初始化代码
+            // window.testWaifuTips(); // 取消自动测试
+        }, 3000);
     </script>
+      <!-- 高级UI效果脚本 -->
+    <script src="{% static 'js/advanced-ui.js' %}"></script>
+    <script src="{% static 'js/effects-manager.js' %}"></script>
+    
+    <!-- 语音识别功能脚本 -->
+    <script src="{% static 'js/speech-recognition.js' %}"></script>
 </body>
 </html>

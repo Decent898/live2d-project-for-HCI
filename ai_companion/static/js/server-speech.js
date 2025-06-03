@@ -21,6 +21,10 @@ document.addEventListener('DOMContentLoaded', function() {
 function initServerSpeech() {
     // 创建音频元素
     audioPlayer = new Audio();
+    
+    // 设置全局引用，供协调器使用
+    window.currentServerAudio = audioPlayer;
+    
     console.log('服务器语音播放器已初始化');
     
     // 初始化Gradio客户端
@@ -32,24 +36,72 @@ function initServerSpeech() {
         }
     } catch (error) {
         console.warn('Gradio客户端初始化失败，将使用服务器API方式:', error);
-    }
-    
-    // 设置事件监听器
+    }    // 设置事件监听器
     audioPlayer.onplay = () => {
         isServerSpeaking = true;
         console.log('服务器语音开始播放');
-    };
-    
-    audioPlayer.onended = () => {
+        
+        // 如果有协调器，通知开始口型同步
+        if (typeof window.expressionSyncCoordinator !== 'undefined' && 
+            window.expressionSyncCoordinator.isPlaying) {
+            console.log('通知协调器开始口型同步');
+            // 协调器会在适当时机自动启动口型同步
+        } else {
+            // 传统的口型同步启动方式
+            if (typeof window.startLipSync === 'function') {
+                console.log('启动口型同步功能');
+                window.startLipSync(audioPlayer, false); // 使用高级模式
+            }
+        }
+    };    audioPlayer.onended = () => {
         isServerSpeaking = false;
         console.log('服务器语音播放结束');
+        
+        // 如果有协调器在运行，让协调器处理清理和表情恢复
+        if (typeof window.expressionSyncCoordinator !== 'undefined' && 
+            window.expressionSyncCoordinator.isPlaying) {
+            console.log('协调器正在运行，交由协调器处理清理和表情恢复');
+            // 协调器会自动处理口型同步的停止和表情恢复
+        } else {
+            // 传统的口型同步停止方式
+            if (typeof window.stopLipSync === 'function') {
+                console.log('停止口型同步功能');
+                window.stopLipSync();
+            }
+            
+            // 如果没有协调器运行，手动恢复 normal 表情
+            if (typeof playMarchSevenExpression === 'function') {
+                console.log('手动恢复 normal 表情');
+                playMarchSevenExpression('normal');
+            }
+        }
+        
         // 播放队列中的下一条消息
         playNextServerSpeech();
-    };
-    
-    audioPlayer.onerror = (event) => {
+    };      audioPlayer.onerror = (event) => {
         console.error('服务器语音播放错误:', event);
         isServerSpeaking = false;
+        
+        // 如果有协调器在运行，让协调器处理清理和表情恢复
+        if (typeof window.expressionSyncCoordinator !== 'undefined' && 
+            window.expressionSyncCoordinator.isPlaying) {
+            console.log('播放错误，通知协调器停止');
+            if (typeof stopCoordinatedResponse === 'function') {
+                stopCoordinatedResponse();
+            }
+        } else {
+            // 传统的口型同步停止方式
+            if (typeof window.stopLipSync === 'function') {
+                window.stopLipSync();
+            }
+            
+            // 如果没有协调器运行，手动恢复 normal 表情
+            if (typeof playMarchSevenExpression === 'function') {
+                console.log('播放错误，手动恢复 normal 表情');
+                playMarchSevenExpression('normal');
+            }
+        }
+        
         // 尝试播放队列中的下一条
         playNextServerSpeech();
     };
@@ -63,6 +115,11 @@ function stopServerSpeech() {
         audioPlayer.pause();
         audioPlayer.currentTime = 0;
         isServerSpeaking = false;
+        
+        // 停止口型同步
+        if (typeof window.stopLipSync === 'function') {
+            window.stopLipSync();
+        }
     }
 }
 
@@ -139,9 +196,7 @@ function playServerSpeech(text, queueIfSpeaking = true) {
                 throw new Error(`服务器语音合成失败: ${response.status}`);
             }            console.log('收到服务器语音响应，处理音频数据');
             return response.blob();
-        })
-        .then(blob => {
-            console.log(`收到音频blob数据，大小: ${blob.size} 字节, 类型: ${blob.type}`);
+        })        .then(blob => {            console.log(`收到音频blob数据，大小: ${blob.size} 字节, 类型: ${blob.type}`);
             
             // 创建blob URL
             const audioUrl = URL.createObjectURL(blob);
@@ -149,29 +204,46 @@ function playServerSpeech(text, queueIfSpeaking = true) {
             
             // 设置音频源并播放
             audioPlayer.src = audioUrl;
-            console.log('开始播放服务器语音');
-            audioPlayer.play().then(() => {
+            console.log('开始播放服务器语音');            audioPlayer.play().then(() => {
                 // 成功播放，重置错误计数
                 console.log('服务器语音开始播放成功');
                 serverSpeechErrorCount = 0;
+                
+                // 如果有协调器且正在运行，通知音频开始播放
+                if (typeof window.expressionSyncCoordinator !== 'undefined' && 
+                    window.expressionSyncCoordinator.isPlaying) {
+                    console.log('通知协调器：音频开始播放');
+                    // 协调器会在适当时机启动口型同步
+                    if (typeof window.expressionSyncCoordinator.startDelayedLipSync === 'function') {
+                        window.expressionSyncCoordinator.startDelayedLipSync(audioPlayer);
+                    }
+                }
             }).catch(error => {
                 console.error('播放服务器语音失败:', error);
                 // 释放 Blob URL
                 URL.revokeObjectURL(audioUrl);
                 
+                // 如果有协调器在运行，通知播放失败
+                if (typeof window.expressionSyncCoordinator !== 'undefined' && 
+                    window.expressionSyncCoordinator.isPlaying) {
+                    if (typeof stopCoordinatedResponse === 'function') {
+                        stopCoordinatedResponse();
+                    }
+                }
+                
                 // 尝试播放下一个
                 isServerSpeaking = false;
                 playNextServerSpeech();
-            });
-            
-            // 播放完成后释放Blob URL
-            audioPlayer.onended = () => {
-                isServerSpeaking = false;
+            });              // 设置一次性事件监听器来释放Blob URL
+            const cleanupUrl = () => {
                 URL.revokeObjectURL(audioUrl);
-                console.log('服务器语音播放结束');
-                // 播放队列中的下一条
-                playNextServerSpeech();
+                console.log('已清理音频URL资源');
+                audioPlayer.removeEventListener('ended', cleanupUrl);
+                audioPlayer.removeEventListener('error', cleanupUrl);
             };
+            
+            audioPlayer.addEventListener('ended', cleanupUrl);
+            audioPlayer.addEventListener('error', cleanupUrl);
         })
         .catch(error => {
             console.error('服务器语音合成请求失败:', error);
@@ -217,3 +289,24 @@ function toggleServerSpeech() {
     
     return serverSpeechEnabled;
 }
+
+// 页面卸载时的清理
+window.addEventListener('beforeunload', () => {
+    console.log('页面即将卸载，清理音频资源');
+    
+    // 停止音频播放
+    if (audioPlayer) {
+        audioPlayer.pause();
+        audioPlayer.src = '';
+    }
+    
+    // 停止口型同步
+    if (typeof window.stopLipSync === 'function') {
+        window.stopLipSync();
+    }
+    
+    // 清理所有音频源
+    if (typeof window.clearAllAudioSources === 'function') {
+        window.clearAllAudioSources();
+    }
+});

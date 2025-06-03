@@ -56,6 +56,11 @@ function stopSpeech() {
     if (speechSynthesis) {
         speechSynthesis.cancel();
         isSpeaking = false;
+        
+        // 停止口型同步
+        if (typeof window.stopLipSync === 'function') {
+            window.stopLipSync();
+        }
     }
 }
 
@@ -96,16 +101,32 @@ async function speakText(text, queueIfSpeaking = true) {
         speechUtterance.rate = 1.0;  // 语速 (0.1 到 10)
         speechUtterance.pitch = 1.0; // 音调 (0 到 2)
         speechUtterance.volume = 1.0; // 音量 (0 到 1)
-        
-        // 设置事件监听器
+          // 设置事件监听器
         speechUtterance.onstart = () => {
             isSpeaking = true;
             console.log('语音开始播放');
+            
+            // 对于客户端语音合成，我们无法直接获取音频元素
+            // 所以使用简化的口型同步模式
+            if (typeof window.startLipSync === 'function') {
+                console.log('启动简化口型同步功能');
+                // 创建一个虚拟的音频元素来模拟播放时长
+                const dummyAudio = new Audio();
+                dummyAudio.currentTime = 0;
+                dummyAudio.duration = text.length * 0.1; // 根据文本长度估算时长
+                window.startLipSync(dummyAudio, true); // 使用简化模式
+            }
         };
         
         speechUtterance.onend = () => {
             isSpeaking = false;
             console.log('语音播放结束');
+            
+            // 停止口型同步
+            if (typeof window.stopLipSync === 'function') {
+                window.stopLipSync();
+            }
+            
             // 播放队列中的下一条消息
             playNextInQueue();
         };
@@ -113,6 +134,12 @@ async function speakText(text, queueIfSpeaking = true) {
         speechUtterance.onerror = (event) => {
             console.error('语音播放错误:', event.error);
             isSpeaking = false;
+            
+            // 停止口型同步
+            if (typeof window.stopLipSync === 'function') {
+                window.stopLipSync();
+            }
+            
             // 尝试播放队列中的下一条
             playNextInQueue();
         };

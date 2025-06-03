@@ -1,0 +1,97 @@
+/* 飞花令比分显示样式 */
+.score-display {
+    margin-top: 15px;
+    padding: 12px;
+    background: #ffffff;
+    border-radius: 10px;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.score-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+}
+
+.score-header i {
+    margin-right: 8px;
+    color: #ffc107; /* 金色皇冠图标 */
+}
+
+.score-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.score-fill {
+    height: 100%;
+    background: #4caf50;
+    border-radius: 4px;
+}
+
+.score-text {
+    font-size: 12px;
+    text-align: center;
+    color: #666;
+}
+
+/* 不同比分等级的样式 */
+.score-display.level-master {
+    border-color: #ffc107;
+    background: #ffffff;
+}
+
+.score-display.level-master .score-fill {
+    background: #ffc107;
+}
+
+.score-display.level-expert {
+    border-color: #2196f3;
+    background: #ffffff;
+}
+
+.score-display.level-expert .score-fill {
+    background: #2196f3;
+}
+
+.score-display.level-intermediate {
+    border-color: #4caf50;
+    background: #ffffff;
+}
+
+.score-display.level-intermediate .score-fill {
+    background: #4caf50;
+}
+
+.score-display.level-beginner {
+    border-color: #9e9e9e;
+    background: #ffffff;
+}
+
+.score-display.level-beginner .score-fill {
+    background: #9e9e9e;
+}
+
+/* 响应式样式 */
+@media (max-width: 768px) {
+    .score-display {
+        padding: 8px;
+        margin-top: 10px;
+    }
+    
+    .score-header {
+        font-size: 12px;
+    }
+    
+    .score-text {
+        font-size: 10px;
+    }
+}

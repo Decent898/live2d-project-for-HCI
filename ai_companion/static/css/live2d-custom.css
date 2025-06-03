@@ -11,36 +11,49 @@
 
 #waifu-tips {
     position: absolute;
-    right: 20px; /* 调整对话框右侧位置 */
-    top: 100px; /* 调整对话框顶部位置 */
-    transform: translateX(0);
+    left: -260px; /* 默认在Live2D角色左侧 */
+    top: 50px; /* 默认在角色头部位置 */
     width: 250px;
     text-align: center;
     color: #333;
     font-size: 14px;
     border: 1px solid #eee;
-    background-color: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     border-radius: 12px;
     padding: 12px;
     pointer-events: auto;
     opacity: 0;
-    transition: opacity 0.3s ease;
     line-height: 1.5;
     max-height: 150px;
     overflow-y: auto;
+    z-index: 1000;
     /* 添加对话框尾巴 */
-    position: relative;
+    font-style: italic;
 }
 
 #waifu-tips:after {
     content: '';
     position: absolute;
-    right: -10px;
-    top: 20px;
+    right: -10px; /* 尾巴指向右侧的Live2D角色 */
+    top: 30px; /* 调整尾巴垂直位置 */
     border-width: 10px 0 10px 10px;
     border-style: solid;
-    border-color: transparent transparent transparent rgba(255, 255, 255, 0.9);
+    border-color: transparent transparent transparent #ffffff;
+    z-index: 1001;
+}
+
+#waifu-tips:before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: #667eea;
+    border-radius: inherit;
+    z-index: -1;
+    opacity: 0.2;
 }
 
 #live2d {
@@ -54,18 +67,6 @@
 /* 覆盖原始库的位置样式 */
 .waifu-tips-active {
     opacity: 1 !important;
-    animation: tipsFadeIn 0.3s ease forwards;
-}
-
-@keyframes tipsFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 /* 情感特定样式 */
@@ -99,9 +100,154 @@
     border-color: #81d4fa;
 }
 
-/* 消息动画 */
-@keyframes message-highlight {
-    0% { box-shadow: 0 0 2px rgba(0, 0, 0, 0.1); }
-    50% { box-shadow: 0 0 10px rgba(33, 150, 243, 0.4); }
-    100% { box-shadow: 0 0 2px rgba(0, 0, 0, 0.1); }
+/* 移除消息动画 */
+
+/* 确保live2d-container可以包含绝对定位的提示框 */
+.live2d-container {
+    position: relative !important;
+    overflow: visible !important; /* 允许提示框超出容器边界 */
+}
+
+/* 好感值显示样式 */
+.favorability-display {
+    margin-top: 15px;
+    padding: 12px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 255, 0.8) 100%);
+    border-radius: 10px;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.favorability-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+}
+
+.favorability-header i {
+    margin-right: 8px;
+    color: #e91e63;
+}
+
+.favorability-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.favorability-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff6b6b 0%, #ffa726 30%, #66bb6a 60%, #e91e63 100%);
+    transition: width 0.5s ease;
+    border-radius: 4px;
+}
+
+.favorability-text {
+    font-size: 12px;
+    text-align: center;
+    color: #666;
+}
+
+/* 不同好感度等级的样式 */
+.favorability-display.level-love {
+    border-color: #e91e63;
+    background: linear-gradient(135deg, rgba(233, 30, 99, 0.1) 0%, rgba(255, 255, 255, 0.9) 100%);
+}
+
+.favorability-display.level-love .favorability-fill {
+    background: linear-gradient(90deg, #e91e63 0%, #ff6b9d 100%);
+}
+
+.favorability-display.level-intimate {
+    border-color: #9c27b0;
+    background: linear-gradient(135deg, rgba(156, 39, 176, 0.1) 0%, rgba(255, 255, 255, 0.9) 100%);
+}
+
+.favorability-display.level-intimate .favorability-fill {
+    background: linear-gradient(90deg, #9c27b0 0%, #e91e63 100%);
+}
+
+.favorability-display.level-friend {
+    border-color: #2196f3;
+    background: linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(255, 255, 255, 0.9) 100%);
+}
+
+.favorability-display.level-friend .favorability-fill {
+    background: linear-gradient(90deg, #2196f3 0%, #9c27b0 100%);
+}
+
+.favorability-display.level-friendly {
+    border-color: #4caf50;
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(255, 255, 255, 0.9) 100%);
+}
+
+.favorability-display.level-friendly .favorability-fill {
+    background: linear-gradient(90deg, #4caf50 0%, #2196f3 100%);
+}
+
+.favorability-display.level-normal {
+    border-color: #ff9800;
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 255, 255, 0.9) 100%);
+}
+
+.favorability-display.level-normal .favorability-fill {
+    background: linear-gradient(90deg, #ff9800 0%, #4caf50 100%);
+}
+
+.favorability-display.level-stranger {
+    border-color: #9e9e9e;
+    background: linear-gradient(135deg, rgba(158, 158, 158, 0.1) 0%, rgba(255, 255, 255, 0.9) 100%);
+}
+
+.favorability-display.level-stranger .favorability-fill {
+    background: linear-gradient(90deg, #9e9e9e 0%, #ff9800 100%);
+}
+
+.favorability-display.level-cold {
+    border-color: #607d8b;
+    background: linear-gradient(135deg, rgba(96, 125, 139, 0.1) 0%, rgba(255, 255, 255, 0.9) 100%);
+}
+
+.favorability-display.level-cold .favorability-fill {
+    background: linear-gradient(90deg, #607d8b 0%, #9e9e9e 100%);
+}
+
+/* 响应式调整waifu-tips位置 */
+@media (max-width: 768px) {
+    #waifu-tips {
+        left: -200px; /* 移动设备上调整位置 */
+        width: 200px; /* 减小宽度 */
+        font-size: 12px; /* 减小字体 */
+    }
+}
+
+@media (max-width: 480px) {
+    #waifu-tips {
+        left: -180px;
+        width: 180px;
+        top: 30px;
+    }
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+    .favorability-display {
+        padding: 8px;
+        margin-top: 10px;
+    }
+    
+    .favorability-header {
+        font-size: 12px;
+    }
+    
+    .favorability-text {
+        font-size: 10px;
+    }
 }

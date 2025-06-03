@@ -125,11 +125,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // 保存会话ID
             if (data.conversation_id) {
                 localStorage.setItem('conversation_id', data.conversation_id);
-            }
-            
-            // 解析LLM返回的JSON响应
+            }                // 解析LLM返回的JSON响应
             let aiMessage = '';
             let emotion = 'normal';
+            let thought = '';
+            let score = 0;
             
             try {
                 // 尝试解析message字段中的JSON
@@ -138,6 +138,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (typeof data.message === 'object') {
                         aiMessage = data.message.content || data.message.message || '我收到了你的消息';
                         emotion = data.message.emotion || 'normal';
+                        thought = data.message.thought || '';
+                        score = data.message.score || 0;
                     } 
                     // 如果message是JSON字符串
                     else if (typeof data.message === 'string') {
@@ -145,38 +147,59 @@ document.addEventListener('DOMContentLoaded', function() {
                             const parsedMessage = JSON.parse(data.message);
                             aiMessage = parsedMessage.content || parsedMessage.message || data.message;
                             emotion = parsedMessage.emotion || 'normal';
+                            thought = parsedMessage.thought || '';
+                            score = parsedMessage.score || 0;
                         } catch (parseError) {
                             // 如果解析失败，直接使用原始消息
                             console.log('消息不是JSON格式，使用原始消息:', data.message);
                             aiMessage = data.message;
                             emotion = 'normal';
+                            thought = '';
+                            score = 0;
                         }
                     }
                 } else {
                     aiMessage = '抱歉，我没有收到有效的回复';
                     emotion = 'normal';
+                    thought = '';
+                    score = 0;
                 }
             } catch (error) {
                 console.error('解析AI回复时出错:', error);
                 aiMessage = data.message || '抱歉，我遇到了一些问题';
                 emotion = 'normal';
+                thought = '';
+                score = 0;
             }
             
             console.log('解析后的AI消息:', aiMessage);
             console.log('解析后的情感:', emotion);
+            console.log('解析后的心理活动:', thought);
+            console.log('解析后的飞花令比分:', score);
             
-            // 显示AI回复
-            addMessage(aiMessage, false);
+            // 更新飞花令比分显示
+            updateScoreDisplay(score);
             
-            // 在Live2D对话框中显示回复
-            if (typeof showMessageInLive2D === 'function') {
-                showMessageInLive2D(aiMessage);
+            // 显示心理活动到waifu-tips
+            if (thought) {
+                showThoughtInWaifuTips(thought);
             }
+            
+            // 移除"正在思考..."消息（安全移除）
+            if (loadingMsg && loadingMsg.parentNode === chatMessages) {
+                chatMessages.removeChild(loadingMsg);
+            }
+            
+            // 显示"思考中..."状态，准备文本但音频还未准备好
+            const thinkingMsg = addMessage('思考中...', false);
+            
+            // 注意：现在不立即显示完整AI回复，而是让协调器逐字显示
+            // addMessage(aiMessage, false); // 这行被注释掉
             
             // 直接使用从LLM返回的情感，触发Live2D表情
             triggerLive2DExpressionFromResponse(emotion);
             
-            // 自动播放AI回复的语音
+            // 自动播放AI回复的语音（协调器会处理文本显示和音频同步）
             console.log('开始播放AI回复语音');
             playAIResponseAudio(aiMessage, emotion);
             console.log('AI回复语音播放完成');
@@ -184,8 +207,8 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Error:', error);
             
-            // 移除加载消息
-            if (loadingMsg) {
+            // 移除加载消息（安全移除）
+            if (loadingMsg && loadingMsg.parentNode === chatMessages) {
                 chatMessages.removeChild(loadingMsg);
             }
             
@@ -235,15 +258,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.log(`从LLM响应中获取的情感: ${emotion}`);
         
-        // 触发对应表情
-        // triggerLive2DExpression(emotion);
-        playMarchSevenExpression(emotion);
+        // 注意：现在表情触发交由协调器处理，这里不直接调用
+        // 表情会在 playAIResponseAudio -> playCoordinatedServerSpeech 中由协调器处理
         
-        // 随机播放动作
+        // 随机播放动作（延迟执行，避免与表情冲突）
         if (window.L2Dwidget && typeof L2Dwidget.showRandomTalk === 'function') {
             setTimeout(() => {
                 L2Dwidget.showRandomTalk();
-            }, 1000);
+            }, 3000); // 延迟3秒，确保表情动画完成
         }
     }
 
@@ -387,13 +409,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 emotion: ttsEmotion
             };
             
-            // 调用服务器语音功能
-            playServerSpeech(message);
+            // 调用协调播放功能，而不是直接播放服务器语音
+            playCoordinatedServerSpeech(message, emotion);
         } else {
             // 如果服务器语音函数不存在，则使用客户端语音合成
             console.log('服务器语音函数不存在，使用客户端语音合成播放AI回复');
             if (typeof speakText === 'function') {
-                speakText(message);
+                // 使用协调播放功能
+                playCoordinatedClientSpeech(message, emotion);
             } else {
                 console.error('找不到任何可用的语音合成功能');
             }
@@ -429,3 +452,133 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// 在waifu-tips中显示心理活动
+function showThoughtInWaifuTips(thought) {
+    if (!thought) return;
+    
+    console.log('显示心理活动:', thought);
+    
+    // 创建showTips事件，只显示心理活动
+    const thoughtEvent = new Event('showTips');
+    thoughtEvent.text = `💭 ${thought}`;
+    document.dispatchEvent(thoughtEvent);
+}
+
+// 更新好感值显示
+// 更新飞花令比分显示
+function updateScoreDisplay(score) {
+    console.log('更新飞花令比分显示:', score);
+    
+    // 查找或创建比分显示元素
+    let scoreElement = document.getElementById('score-display');
+    
+    if (!scoreElement) {
+        scoreElement = document.createElement('div');
+        scoreElement.id = 'score-display';
+        scoreElement.className = 'score-display';
+        
+        // 将比分显示添加到companion-info区域
+        const companionInfo = document.querySelector('.companion-info');
+        if (companionInfo) {
+            companionInfo.appendChild(scoreElement);
+        } else {
+            document.body.appendChild(scoreElement);
+        }
+    }
+    
+    // 更新比分显示
+    scoreElement.innerHTML = `
+        <div class="score-header">
+            <i class="fas fa-crown"></i> 飞花令比分
+        </div>
+        <div class="score-bar">
+            <div class="score-fill" style="width: ${Math.min(score * 10, 100)}%"></div>
+        </div>
+        <div class="score-text">
+            当前分数: ${score}
+        </div>
+    `;
+    
+    // 添加比分等级对应的CSS类
+    let scoreClass = 'level-beginner';
+    
+    if (score >= 8) {
+        scoreClass = 'level-master';
+    } else if (score >= 5) {
+        scoreClass = 'level-expert';
+    } else if (score >= 3) {
+        scoreClass = 'level-intermediate';
+    }
+    
+    scoreElement.className = `score-display ${scoreClass}`;
+}
+
+// 协调播放服务器语音的函数
+function playCoordinatedServerSpeech(message, emotion) {
+    console.log('开始协调播放服务器语音');
+        
+        // 停止任何正在进行的协调播放
+        if (typeof stopCoordinatedResponse === 'function') {
+            stopCoordinatedResponse();
+        }
+        
+        // 使用协调器播放，但不直接传递音频元素
+        // 因为服务器语音会在服务器端异步处理
+        if (typeof playCoordinatedResponse === 'function') {
+            playCoordinatedResponse(message, emotion, null);
+        }
+        
+        // 同时启动服务器语音播放
+        if (typeof playServerSpeech === 'function') {
+            playServerSpeech(message);
+        }
+    }
+    
+    // 协调播放客户端语音的函数
+    function playCoordinatedClientSpeech(message, emotion) {
+        console.log('开始协调播放客户端语音');
+        
+        // 停止任何正在进行的协调播放
+        if (typeof stopCoordinatedResponse === 'function') {
+            stopCoordinatedResponse();
+        }
+        
+        // 创建语音合成
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(message);
+            utterance.lang = 'zh-CN';
+            utterance.rate = 0.9;
+            utterance.pitch = 1.0;
+            
+            // 使用协调器播放，传递可以监听的音频对象
+            // 注意：SpeechSynthesisUtterance 不是 HTMLAudioElement，但我们可以监听其事件
+            if (typeof playCoordinatedResponse === 'function') {
+                playCoordinatedResponse(message, emotion, null);
+            }
+            
+            // 启动语音合成
+            speechSynthesis.speak(utterance);
+            
+            // 语音合成结束时的处理
+            utterance.onend = () => {
+                console.log('客户端语音播放结束');
+                if (typeof stopCoordinatedResponse === 'function') {
+                    stopCoordinatedResponse();
+                }
+            };
+            
+            utterance.onerror = (event) => {
+                console.error('客户端语音播放错误:', event);
+                if (typeof stopCoordinatedResponse === 'function') {
+                    stopCoordinatedResponse();
+                }
+            };
+        } else {
+            console.error('浏览器不支持语音合成');
+            // 如果不支持语音合成，只显示文字和表情
+            if (typeof playCoordinatedResponse === 'function') {
+                playCoordinatedResponse(message, emotion, null);
+            }
+        }
+    }

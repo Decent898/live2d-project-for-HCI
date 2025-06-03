@@ -338,6 +338,7 @@ function playMarchSevenExpression(expressionName) {
 // 设置面部参数
 function setFaceParameter(paramName, value) {
     try {
+        console.log(`设置面部参数: ${paramName} = ${value}`);
         if (cubism3Model && cubism3Model.internalModel) {
             const model = cubism3Model.internalModel;
             const parameter = model.coreModel._parameterIds.indexOf(paramName);
